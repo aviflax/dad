@@ -21,7 +21,7 @@ exec clojure $OPTS -Sdeps "$DEPS" "$0" boom
   (:require [clj-yaml.core :as yaml]
             [clojure.java.io :as io]
             [clojure.string :as str :refer [lower-case]]
-            [medley.core :refer [find-first map-kv map-vals]]
+            [medley.core :refer [filter-vals find-first map-kv map-vals]]
             [selmer.filters :as filters]
             [selmer.parser :as parser :refer [render]])
   (:import [java.io FileNotFoundException]))
@@ -38,11 +38,15 @@ exec clojure $OPTS -Sdeps "$DEPS" "$0" boom
 
 (defn flex=
   [& vs]
-  (apply = (map name vs)))
+  (apply = (map (comp lower-case name) vs)))
 
 (def filters
   ;; TODO: some of these names are iffy. Rethink!
-  {:get flexi-get
+  {:filter-by (fn [m k v]
+                (->> m
+                     (filter-vals (fn [im] (flex= (flexi-get im k) v)))
+                     (into (empty m))))
+   :get flexi-get
    ;; We should probably replace this sketchy impl with one from a third-party library
    :slugify #(some-> (name %)
                      (lower-case)
