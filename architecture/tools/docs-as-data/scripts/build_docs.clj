@@ -21,7 +21,7 @@ exec clojure $OPTS -Sdeps "$DEPS" "$0" boom
   (:require [clj-yaml.core :as yaml]
             [clojure.java.io :as io]
             [clojure.string :as str :refer [lower-case]]
-            [medley.core :refer [filter-vals find-first map-kv map-vals]]
+            [medley.core :refer [filter-vals map-kv map-vals]]
             [selmer.filters :as filters]
             [selmer.parser :as parser :refer [render]])
   (:import [java.io FileNotFoundException]))
@@ -112,11 +112,19 @@ exec clojure $OPTS -Sdeps "$DEPS" "$0" boom
   https://github.com/yogthos/Selmer/issues/170#issuecomment-594778666 is addressed, we can reassess
   this function."
   [s]
-  (-> ;; Selmer rendering tends to yield a ton of extra whitespace, which can cause problems when
-      ;; rendering Markdown. So we collapse down two or more blank lines followed stretches of
-      ;; whitespace.
-      (str/replace s #"\n\s*\n +" "\n\n")
-      ;; Collapse 2 or more blank lines into a single blank line.
+  (-> ;; For now we’ve hacked in our own whitespace control: any line that, after rendering,
+      ;; ends with 🆇, will be removed.
+      (str/replace s #"\n.*🆇" "")
+
+      ; Selmer rendering tends to yield a ton of extra whitespace, which can cause problems when
+      ; rendering Markdown. So we collapse down one or more blank lines followed stretches of
+      ; whitespace into a single blank line with no leading whitespace.
+      (str/replace #"\n\s*\n *" "\n\n")
+
+      ; I don’t know, this just helps. Markdown stuff. Sue me.
+      (str/replace #"\n +" "\n")
+
+      ; Collapse 2 or more blank lines into a single blank line.
       (str/replace #"\n{3,}" "\n\n")))
 
 (def warning-header
