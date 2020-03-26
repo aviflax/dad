@@ -42,20 +42,11 @@ exec clojure $OPTS -Sdeps "$DEPS" "$0" boom
 
 (def filters
   ;; TODO: some of these names are iffy. Rethink!
-  {:filter-by (fn [m k v]
-                (into (empty m)
-                      (filter (fn [[_k im]] (flex= (flexi-get im k) v))
-                              m)))
-   :get flexi-get
-   :get-by (fn [coll k v]
-             (find-first #(flex= (flexi-get % k) v)
-                         coll))
+  {:get flexi-get
    ;; We should probably replace this sketchy impl with one from a third-party library
    :slugify #(some-> (name %)
                      (lower-case)
                      (str/replace #"\s" "-"))
-   :sort-by-first #(into (empty %)
-                         (sort-by (fn [v] (first v)) %))
 
    ; This name isn’t clear. It’s really sort-by-nested-key as it assumes that the input is a coll
    ; of maps. Gotta figure this out.
