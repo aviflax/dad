@@ -47,10 +47,15 @@ exec clojure $OPTS -Sdeps "$DEPS" "$0" boom
                      (filter-vals (fn [im] (flex= (flexi-get im k) v)))
                      (into (empty m))))
    :get flexi-get
-   ;; We should probably replace this sketchy impl with one from a third-party library
+
+   ;; This needs to produce the same slugs that GitHub generates when rendering Markdown into HTML.
+   ;; (GH generates “permalinks” for every Markdown header; the anchor is a slugified version of
+   ;; the header text.)
+   ;; We should probably replace this sketchy impl with one from a third-party library.
    :slugify #(some-> (name %)
                      (lower-case)
-                     (str/replace #"\s" "-"))
+                     (str/replace #"\s" "-")
+                     (str/replace #"[^-_A-Za-z0-9]" ""))
 
    ; This name isn’t clear. It’s really sort-by-nested-key as it assumes that the input is a coll
    ; of maps. Gotta figure this out.
