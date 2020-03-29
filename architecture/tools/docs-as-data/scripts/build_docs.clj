@@ -121,13 +121,13 @@ exec clojure $OPTS -Sdeps "$DEPS" "$0" boom
       ;; ends with 🆇, will be removed.
       (str/replace s #"\n.*🆇" "")
 
+      ;; TODO
+      (str/replace #"[ \t]*⌫" "")
+
       ; Selmer rendering tends to yield a ton of extra whitespace, which can cause problems when
       ; rendering Markdown. So we collapse down one or more blank lines followed stretches of
       ; whitespace into a single blank line with no leading whitespace.
       (str/replace #"\n\s*\n *" "\n\n")
-
-      ; I don’t know, this just helps. Markdown stuff. Sue me.
-      (str/replace #"\n +" "\n")
 
       ; Collapse 2 or more blank lines into a single blank line.
       (str/replace #"\n{3,}" "\n\n")))
