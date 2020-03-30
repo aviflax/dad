@@ -24,7 +24,8 @@ exec clojure $OPTS -Sdeps "$DEPS" "$0" boom
             [medley.core :as med :refer [filter-vals map-kv map-vals]]
             [selmer.filters :as filters]
             [selmer.parser :as parser :refer [render]])
-  (:import [java.io FileNotFoundException]))
+  (:import [java.io FileNotFoundException]
+           [java.time ZonedDateTime]))
 
 (defn flexi-get
   ([coll k]
@@ -56,6 +57,9 @@ exec clojure $OPTS -Sdeps "$DEPS" "$0" boom
                      (lower-case)
                      (str/replace #"\s" "-")
                      (str/replace #"[^-_A-Za-z0-9]" ""))
+
+   :parse-date-time #(try (when-not (str/blank? %) (ZonedDateTime/parse %))
+                          (catch Exception _e nil))
 
    ; This name isn’t clear. It’s really sort-by-nested-key as it assumes that the input is a coll
    ; of maps. Gotta figure this out.
