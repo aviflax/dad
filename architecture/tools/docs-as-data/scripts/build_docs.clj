@@ -108,9 +108,12 @@ exec clojure $OPTS -Sdeps "$DEPS" "$0" boom
   https://github.com/yogthos/Selmer/issues/170#issuecomment-594778666 is addressed, we can reassess
   this function."
   [s]
-  (-> ;; For now we’ve hacked in our own whitespace control: any line that, after rendering,
-      ;; ends with 🆇, will be removed.
-      (str/replace s #"\n.*🆇" "")
+  (-> ;; For now we’ve hacked in our own whitespace control, which operates on the result of
+      ;; Selmer’s rendering. Any trailing whitespace will be removed from any line that ends with 🆇
+      ;; will be removed, along with the 🆇 and the newline. If the line was blank then it will
+      ;; therefore be removed altogether. If it wasn’t blank then its contents will effectively be
+      ;; merged with the following line. Sorry if this isn’t clear; it’s hard to explain.
+      (str/replace s #"[ \t]*🆇\n" "")
 
       ;; TODO
       (str/replace #"[ \t]*⌫" "")
