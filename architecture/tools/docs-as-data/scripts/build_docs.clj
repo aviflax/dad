@@ -21,7 +21,7 @@ exec clojure $OPTS -Sdeps "$DEPS" "$0" boom
   (:require [clj-yaml.core :as yaml]
             [clojure.java.io :as io]
             [clojure.string :as str :refer [lower-case]]
-            [medley.core :refer [filter-vals map-kv map-vals]]
+            [medley.core :as med :refer [filter-vals map-kv map-vals]]
             [selmer.filters :as filters]
             [selmer.parser :as parser :refer [render]])
   (:import [java.io FileNotFoundException]))
@@ -95,21 +95,12 @@ exec clojure $OPTS -Sdeps "$DEPS" "$0" boom
                 (re-seq #".ya?ml$" (.getName %)))
             v)))
 
-(defn file-path->key
-  "Accepts a relative file path like data/model/us.yaml and returns :model/us"
-  [path]
-  (-> path
-      (str/replace #"^data/" "")
-      (str/replace #".ya?ml$" "")
-      keyword))
-
 (defn load-data
-  [path]
-  (let [files (yaml-files path)
-        names (map file-path->key files)]
-    (->> (map slurp files)
-         (zipmap names)
-         (map-vals yaml/parse-string))))
+  [data-dir]
+  (->> (yaml-files data-dir)
+       (map slurp)
+       (map yaml/parse-string)
+       (reduce med/deep-merge)))
 
 (defn reduce-whitespace
   "Selmer doesn’t have any whitespace control features, so we use this function in post-processing
