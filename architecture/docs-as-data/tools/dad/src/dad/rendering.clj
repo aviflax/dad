@@ -6,7 +6,7 @@
             [medley.core :as mc]
             [selmer.filters :as filters]
             [selmer.parser :as parser :refer [render]])
-  (:import [java.time ZonedDateTime]))
+  (:import [java.time LocalDate ZonedDateTime]))
 
 (defn- flexi-get
   ([coll k]
@@ -29,6 +29,14 @@
                      (mc/filter-vals (fn [im] (flex= (flexi-get im k) v)))
                      (into (empty m))))
    :get flexi-get
+
+   ; Given a sequence of maps, sort them by the specified date/time property, then return the map
+   ; with the most recent date value in that property. The values must be either ISO-8601 dates
+   ; (2020-04-20) or (COMING SOON) ISO-8601 date-times (2020-04-20T16:20:00-04:00).
+   ; TODO: what should this do if the value isn’t a sequence of maps? Or if one or more of the maps
+   ;       don’t have the specified property (key)?
+   :latest-by (fn [maps k]
+                (last (sort-by (fn [m] (LocalDate/parse (get m k))) maps)))
 
    ;; This needs to produce the same slugs that GitHub generates when rendering Markdown into HTML.
    ;; (GH generates “permalinks” for every Markdown header; the anchor is a slugified version of
