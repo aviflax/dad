@@ -22,6 +22,8 @@
   [& vs]
   (apply = (map (comp lower-case name) vs)))
 
+(def to-pattern (memoize re-pattern))
+
 (def filters
   ;; TODO: some of these names are iffy. Rethink!
   {:filter-by (fn [m k v]
@@ -29,6 +31,10 @@
                      (mc/filter-vals (fn [im] (flex= (flexi-get im k) v)))
                      (into (empty m))))
    :get flexi-get
+
+   :includes? str/includes?
+
+   :join (fn [coll separator] (str/join separator coll))
 
    ; Given a sequence of maps, sort them by the specified date/time property, then return the map
    ; with the most recent date value in that property. The values must be either ISO-8601 dates
@@ -63,6 +69,7 @@
                     (sort-by (fn [[k v]]
                                (lower-case (flexi-get v "full-name" (name k))))
                              coll))
+   :split (fn [s regex] (str/split s (to-pattern regex)))
    :without (fn [coll k]
               (remove (fn [[_name props]]
                         (or (contains? props k)
