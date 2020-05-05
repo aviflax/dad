@@ -106,6 +106,9 @@
       (str/replace #"\n{3,}" "\n\n")))
 
 (defn- warning-header
+  "Builds and returns a warning header as a string. The header is guaranteed to contain the
+  substring `AUTOMATICALLY generated from a template` — downstream projects may use this to identify
+  generated docs." ;; SO if you change this function, DO NOT change that substring!
   [template-path repo-root-dir]
   (-> ["<!--"
         ""
