@@ -6,19 +6,32 @@
             [dad.rendering :as r]))
 
 (defn- exists?!
-  [[opt-name s]]
+  [opt-name s]
   (let [f (file s)]
     (when-not (.isDirectory f)
       (throw (RuntimeException. (format "The path supplied for %s, %s, must be a directory!"
                                         opt-name
                                         s))))))
 
-(defn- build
+(defn- render
   [{:keys [db templates project-root out] :as opts}]
-  (run! exists?! (select-keys opts [:db :templates :project-root :out]))
+  (run! (fn [[opt-name s]] (exists?! opt-name s))
+        (select-keys opts [:db :templates :project-root :out]))
   (-> (db/read db)
       (r/build-docs templates project-root)
       (io/write-docs! out templates project-root)))
+
+(defn- rebuild
+  [{db :db}]
+  (exists?! :db db)
+  (-> (db/read db)
+      (db/overwrite)))
+
+(def db-opt
+  {:option  "db"
+   :as      "The path to the database directory"
+   :type    :string
+   :default :present})
 
 (def config
   ;; The spec for this is here: https://github.com/l3nz/cli-matic/blob/master/README.md
@@ -26,13 +39,10 @@
   {:app         {:command     "dad"
                  :description "Toolkit for “Docs as Data”"
                  :version     "TBD"}
-   :commands    [{:command     "build"
+   :commands    [{:command     "render"
                   :description (str "Generates document files as per the document templates and the"
                                     " data in the database.")
-                  :opts        [{:option  "db"
-                                 :as      "The path to the database directory"
-                                 :type    :string
-                                 :default :present}
+                  :opts        [db-opt
                                 {:option  "templates"
                                  :as      "The path to the templates directory"
                                  :type    :string
@@ -46,7 +56,12 @@
                                                " documents should be written")
                                  :type    :string
                                  :default :present}]
-                   :runs build}]})
+                   :runs        render}
+                  {:command     "rebuild" ; Maybe rename to `reformat?`
+                   :description (str "Reads the database and writes it right back out, normalizing"
+                                     " the formatting.")
+                   :opts        [db-opt]
+                   :runs        rebuild}]})
 
 (defn -main
   [& args]
