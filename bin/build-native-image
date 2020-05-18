@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -eu
+
+if [ -z "$NATIVE_IMAGE" ]; then
+    echo 'Please set $NATIVE_IMAGE'
+    exit 1
+fi
+
+clojure -A:uberjar
+
+$NATIVE_IMAGE \
+    -jar target/dad-jit.jar \
+    -H:Name=dad \
+    -H:+ReportExceptionStackTraces \
+    --initialize-at-build-time  \
+    --verbose \
+    --no-fallback \
+    --no-server \
+    "-J-Xmx3g"
