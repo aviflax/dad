@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2016
 
 set -eu
 
@@ -10,7 +11,7 @@ fi
 clojure -e "(compile 'dad.cli)"
 
 $NATIVE_IMAGE \
-    -cp $(clojure -Spath):classes \
+    -cp "$(clojure -Spath):classes" \
     -H:Name=dad \
     -H:+ReportExceptionStackTraces \
     --initialize-at-build-time  \

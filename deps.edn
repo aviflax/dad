@@ -16,9 +16,4 @@
 
   :main       {:main-opts ["-m" "dad.cli"]}
                :jvm-opts  ["-Dapple.awt.UIElement=true"
-                           "-Djava.awt.headless=true"]
-
-  :uberjar    {:extra-deps {depstar {:git/url "https://github.com/seancorfield/depstar"
-                                     :sha "86b64dd0e6e6a3d03020e54537c0cea2b384dbdd"
-                                     :tag "v1.0.94"}}
-               :main-opts ["-m" "hf.depstar.uberjar" "target/dad-jit.jar" "-v"]}}}
+                           "-Djava.awt.headless=true"]}}
