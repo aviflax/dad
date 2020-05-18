@@ -7,14 +7,15 @@ if [ -z "$NATIVE_IMAGE" ]; then
     exit 1
 fi
 
-clojure -A:uberjar
+clojure -e "(compile 'dad.cli)"
 
 $NATIVE_IMAGE \
-    -jar target/dad-jit.jar \
+    -cp $(clojure -Spath):classes \
     -H:Name=dad \
     -H:+ReportExceptionStackTraces \
     --initialize-at-build-time  \
     --verbose \
     --no-fallback \
     --no-server \
-    "-J-Xmx3g"
+    "-J-Xmx3g" \
+    dad.cli
