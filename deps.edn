@@ -21,4 +21,4 @@
   :uberjar    {:extra-deps {depstar {:git/url "https://github.com/seancorfield/depstar"
                                      :sha "86b64dd0e6e6a3d03020e54537c0cea2b384dbdd"
                                      :tag "v1.0.94"}}
-               :main-opts ["-m" "hf.depstar.uberjar" "target/dad.jar" "-v"]}}}
+               :main-opts ["-m" "hf.depstar.uberjar" "target/dad-jit.jar" "-v"]}}}
