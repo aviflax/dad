@@ -8,15 +8,19 @@ if [ -z "$NATIVE_IMAGE" ]; then
     exit 1
 fi
 
-clojure -e "(compile 'dad.cli)"
+rm -Rf classes
+mkdir classes
+
+clojure -A:compile-for-native-image -e "(compile 'dad.cli)"
 
 $NATIVE_IMAGE \
-    -cp "$(clojure -Spath):classes" \
+    -cp "$(clojure -A:compile-for-native-image -Spath):classes" \
     -H:Name=dad \
     -H:+ReportExceptionStackTraces \
     --initialize-at-build-time  \
     --verbose \
     --no-fallback \
     --no-server \
-    "-J-Xmx3g" \
+    "-J-Xms5g" \
+    "-J-Xmx5g" \
     dad.cli
