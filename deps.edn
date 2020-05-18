@@ -10,13 +10,5 @@
   selmer                {:mvn/version "1.12.23"}}
 
  :aliases
- {:dev        {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"
-                          "--illegal-access=deny"
-                          "-Dclojure.server.repl={:port,0,:accept,clojure.core.server/repl}"]}
-
-  :main       {:main-opts ["-m" "dad.cli"]
-               :jvm-opts  ["-Dapple.awt.UIElement=true"
-                           "-Djava.awt.headless=true"]}
-                         
-  :compile-for-native-image
+ {:native-image
   {:extra-deps {borkdude/clj-reflector-graal-java11-fix {:mvn/version "0.0.1-graalvm-19.3.2"}}}}}

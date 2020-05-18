@@ -11,10 +11,10 @@ fi
 rm -Rf classes
 mkdir classes
 
-clojure -A:compile-for-native-image -e "(compile 'dad.cli)"
+clojure -A:native-image -e "(compile 'dad.cli)"
 
 $NATIVE_IMAGE \
-    -cp "$(clojure -A:compile-for-native-image -Spath):classes" \
+    -cp "$(clojure -A:native-image -Spath):classes" \
     -H:Name=dad \
     -H:+ReportExceptionStackTraces \
     --initialize-at-build-time  \
