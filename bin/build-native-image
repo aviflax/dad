@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2016
 
-set -eu
+set -eux
 
 if [ -z "$NATIVE_IMAGE" ]; then
     echo 'Please set $NATIVE_IMAGE'
