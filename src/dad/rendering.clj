@@ -6,7 +6,10 @@
             [medley.core :as mc]
             [selmer.filters :as filters]
             [selmer.parser :as parser :refer [render]])
-  (:import [java.time LocalDate ZonedDateTime]))
+  (:import [java.io File]
+           [java.time LocalDate ZonedDateTime]))
+
+(set! *warn-on-reflection* true)
 
 (defn- flexi-get
   ([coll k]
@@ -161,7 +164,7 @@
   [db templates-dir repo-root-dir]
   (register-filters!)
   (->> (file-seq (file templates-dir))
-       (filter (memfn isFile)) ;; TODO: this breaks if there’s a binary file, e.g. .DS_Store
+       (filter (fn [^File fp] (.isFile fp))) ;; TODO: this breaks if there’s a binary file, e.g. .DS_Store
 
        ;; Render template, wrap result in a map along with the template path
        (map #(hash-map :dad/template-path %
