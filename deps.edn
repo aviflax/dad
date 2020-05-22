@@ -20,7 +20,4 @@
 
   :depstar    {:extra-deps {depstar {:git/url "https://github.com/seancorfield/depstar"
                                      :sha "86b64dd0e6e6a3d03020e54537c0cea2b384dbdd"
-                                     :tag "v1.0.94"}}}
-
-  :native-image {:extra-deps
-                 {borkdude/clj-reflector-graal-java11-fix {:mvn/version "0.0.1-graalvm-20.1.0"}}}}}
+                                     :tag "v1.0.94"}}}}}

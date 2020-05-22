@@ -4,8 +4,8 @@
 set -eux
 
 ## TEMP TEMP
-export PATH=/Library/Java/JavaVirtualMachines/graalvm-ce-java11-20.1.0/Contents/Home/bin:$PATH
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/graalvm-ce-java11-20.1.0/Contents/Home
+export PATH=/Library/Java/JavaVirtualMachines/graalvm-ce-java8-20.1.0/Contents/Home/bin:$PATH
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/graalvm-ce-java8-20.1.0/Contents/Home
 export NATIVE_IMAGE=$JAVA_HOME/bin/native-image
 
 if [ -z "$NATIVE_IMAGE" ]; then
@@ -13,8 +13,12 @@ if [ -z "$NATIVE_IMAGE" ]; then
     exit 1
 fi
 
-clojure -R:native-image -Spom
-clojure -R:depstar:native-image -m hf.depstar.uberjar target/dad-for-native-image.jar -v -C -m dad.cli
+UBERJAR="target/dad-for-native-image.jar"
+
+if [ ! -f "$UBERJAR" ]; then
+  clojure -Spom
+  clojure -R:depstar -m hf.depstar.uberjar "$UBERJAR" -v -C -m dad.cli
+fi
 
 $NATIVE_IMAGE \
     -jar target/dad-for-native-image.jar \
