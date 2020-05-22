@@ -13,21 +13,23 @@ if [ -z "$NATIVE_IMAGE" ]; then
     exit 1
 fi
 
-UBERJAR="target/dad-for-native-image.jar"
+UBERJAR="target/dad.jar"
 
 if [ ! -f "$UBERJAR" ]; then
-  clojure -Spom
-  clojure -R:depstar -m hf.depstar.uberjar "$UBERJAR" -v -C -m dad.cli
+  bin/build-uberjar
 fi
 
 $NATIVE_IMAGE \
-    -jar target/dad-for-native-image.jar \
+    -jar target/dad.jar \
     -H:Name=dad \
     -H:+ReportExceptionStackTraces \
-    --initialize-at-build-time  \
+    --initialize-at-build-time \
+    --report-unsupported-elements-at-runtime \
     --verbose \
     --no-fallback \
     --no-server \
     "-J-Xms10g" \
     "-J-Xmx10g" \
     target/dad
+
+say "ATTENTION: AUTOMATED EXECUTABLE GENERATION PROCEDURE IS COMPLETE."

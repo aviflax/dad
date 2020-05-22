@@ -1,5 +1,6 @@
 #!/bin/sh
 
 set -eux
+
 clojure -Spom
 clojure -R:depstar -m hf.depstar.uberjar target/dad.jar -v -C -m dad.cli
