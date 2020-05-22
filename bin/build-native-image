@@ -21,6 +21,6 @@ $NATIVE_IMAGE \
     --verbose \
     --no-fallback \
     --no-server \
-    "-J-Xms5g" \
-    "-J-Xmx5g" \
+    "-J-Xms10g" \
+    "-J-Xmx10g" \
     dad.cli
