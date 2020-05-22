@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2016
+
+set -eux
+
+## TEMP TEMP
+export PATH=/Library/Java/JavaVirtualMachines/graalvm-ce-java11-20.1.0/Contents/Home/bin:$PATH
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/graalvm-ce-java11-20.1.0/Contents/Home
+export NATIVE_IMAGE=$JAVA_HOME/bin/native-image
+
+if [ -z "$NATIVE_IMAGE" ]; then
+    echo 'Please set $NATIVE_IMAGE'
+    exit 1
+fi
+
+clojure -R:depstar -Spom
+clojure -R:depstar:native-image -m hf.depstar.uberjar target/dad-for-native-image.jar -v -C -m dad.cli
+
+$NATIVE_IMAGE \
+    -jar target/dad-for-native-image.jar \
+    -H:Name=dad \
+    -H:+ReportExceptionStackTraces \
+    --initialize-at-build-time  \
+    --verbose \
+    --no-fallback \
+    --no-server \
+    "-J-Xms10g" \
+    "-J-Xmx10g" \
+    dad.cli
