@@ -26,5 +26,4 @@ $NATIVE_IMAGE \
     --no-server \
     "-J-Xms10g" \
     "-J-Xmx10g" \
-    dad.cli \
     target/dad
