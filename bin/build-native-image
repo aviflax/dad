@@ -13,7 +13,7 @@ if [ -z "$NATIVE_IMAGE" ]; then
     exit 1
 fi
 
-clojure -R:depstar -Spom
+clojure -R:native-image -Spom
 clojure -R:depstar:native-image -m hf.depstar.uberjar target/dad-for-native-image.jar -v -C -m dad.cli
 
 $NATIVE_IMAGE \
@@ -26,4 +26,5 @@ $NATIVE_IMAGE \
     --no-server \
     "-J-Xms10g" \
     "-J-Xmx10g" \
-    dad.cli
+    dad.cli \
+    target/dad
