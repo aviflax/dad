@@ -1,0 +1,20 @@
+name: Build distribution artifacts
+on: push
+jobs:
+  native_image:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - uses: DeLaGuardo/setup-graalvm@3
+        with:
+          graalvm-version: '20.1.0.java8'
+      - run: gu install native-image
+      - uses: DeLaGuardo/setup-clojure@2.0
+        with:
+          tools-deps: '1.10.1.536'
+      - uses: actions/checkout@v2
+      - run: bin/build-native-image
+      - uses: actions/upload-artifact@v2
+        with:
+          name: dad-linux-amd64
+          path: target/dad
