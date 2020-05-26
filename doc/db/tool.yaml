@@ -1,0 +1,17 @@
+dependencies:
+  Clojure:
+    for: development
+    when: [build-time, run-time]
+    url: https://clojure.org/
+  JRE:
+    for: development
+    when: [build-time, run-time]
+    url: https://en.wikipedia.org/wiki/Java_virtual_machine#Java_Runtime_Environment
+  Selmer:
+    for: templating
+    when: [build-time, run-time]
+    url: https://github.com/yogthos/Selmer
+  GraalVM:
+    for: building executables
+    when: [build-time]
+    url: https://en.wikipedia.org/wiki/GraalVM
