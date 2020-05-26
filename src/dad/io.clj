@@ -3,6 +3,8 @@
             [clojure.string :as str]
             [dad.files :as files :refer [relative-path]]))
 
+(set! *warn-on-reflection* true)
+
 (defn- output-path
   [template-path front-path templates-dir out-dir]
   (->> (if front-path
