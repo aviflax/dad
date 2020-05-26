@@ -2,7 +2,7 @@ name: Build distribution artifacts
 on: push
 jobs:
   native_image:
-    runs-on: macos-10.15
+    runs-on: ubuntu-latest
     steps:
       - uses: DeLaGuardo/setup-graalvm@3
         with:
@@ -15,5 +15,5 @@ jobs:
       - run: bin/build-native-image
       - uses: actions/upload-artifact@v2
         with:
-          name: dad-macos-amd64
+          name: dad-linux-amd64
           path: target/dad
