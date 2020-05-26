@@ -5,7 +5,10 @@
             [dad.yaml :as yaml]
             [dad.rendering.filters :as filters]
             [dad.rendering.tags :as tags]
-            [selmer.parser :as parser :refer [render]]))
+            [selmer.parser :as parser :refer [render]])
+  (:import [java.io File]))
+
+(set! *warn-on-reflection* true)
 
 (defn- reduce-whitespace
   "Selmer doesn’t have any whitespace control features, so we use this function in post-processing
@@ -88,7 +91,7 @@
   (filters/register!)
   (tags/register!)
   (->> (file-seq (file templates-dir))
-       (filter (memfn isFile)) ;; TODO: this breaks if there’s a binary file, e.g. .DS_Store
+       (filter (fn [^File fp] (.isFile fp))) ;; TODO: this breaks if there’s a binary file, e.g. .DS_Store
 
        ;; Render template, wrap result in a map along with the template path
        (map #(hash-map :dad/template-path %

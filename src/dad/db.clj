@@ -13,6 +13,8 @@
             [clojure.java.io :as io]
             [medley.core :as mc :refer [deep-merge map-vals]]))
 
+(set! *warn-on-reflection* true)
+
 (defn read-physical
   "Returns a map of filepath to the parsed YAML contents of the file. NB: a single dataset may be
   spread across multiple files! Be careful not to assume that a file and a dataset have a 1:1
