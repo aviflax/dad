@@ -1,5 +1,6 @@
 {:deps
- {cli-matic             {:git/url "https://github.com/l3nz/cli-matic"
+ {org.clojure/clojure   {:mvn/version "1.10.2-alpha1"}
+  cli-matic             {:git/url "https://github.com/l3nz/cli-matic"
                          :sha "2640ad5b6dcc2ae0638f79d0edb9f007351487b0"
                          :tag "v0.3.11"}
   clj-commons/clj-yaml  {:mvn/version "0.7.0"}
@@ -9,15 +10,19 @@
   selmer                {:mvn/version "1.12.23"}}
 
  :aliases
- {:dev   {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"
-                     "--illegal-access=deny"
-                     "-Dclojure.server.repl={:port,0,:accept,clojure.core.server/repl}"]}
-
-  :test  {:extra-paths ["test"]
-          :extra-deps  {kaocha {:git/url "https://github.com/lambdaisland/kaocha"
-                                :sha "c97184a30a604da92a86d4207ed7e26b67881e5c"
-                                :tag "v1.0.629"}}}
-
-  :main  {:main-opts ["-m" "dad.cli"]}
-          :jvm-opts  ["-Dapple.awt.UIElement=true"
-                      "-Djava.awt.headless=true"]}}
+ {:dev        {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"
+                          "--illegal-access=deny"
+                          "-Dclojure.server.repl={:port,0,:accept,clojure.core.server/repl}"]}
+  
+  :test       {:extra-paths ["test"]
+               :extra-deps  {kaocha {:git/url "https://github.com/lambdaisland/kaocha"
+                                     :sha "c97184a30a604da92a86d4207ed7e26b67881e5c"
+                                     :tag "v1.0.629"}}}
+  
+  :main       {:main-opts ["-m" "dad.cli"]
+               :jvm-opts  ["-Dapple.awt.UIElement=true"
+                           "-Djava.awt.headless=true"]}
+  
+  :depstar    {:extra-deps {depstar {:git/url "https://github.com/seancorfield/depstar"
+                                     :sha "86b64dd0e6e6a3d03020e54537c0cea2b384dbdd"
+                                     :tag "v1.0.94"}}}}}
