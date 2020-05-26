@@ -18,8 +18,8 @@ native-image \
     --verbose \
     --no-fallback \
     --no-server \
-    "-J-Xms6g" \
-    "-J-Xmx6g" \
+    "-J-Xms6.5g" \
+    "-J-Xmx6.5g" \
     target/dad
 
 which say &>/dev/null && say "ATTENTION: AUTOMATED EXECUTABLE GENERATION PROCEDURE IS COMPLETE."
