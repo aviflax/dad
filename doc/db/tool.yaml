@@ -1,17 +1,28 @@
+# PLEASE NOTE: you are welcome to edit this data, but please be aware
+#              that this file is regularly reprocessed programmatically,
+#              so comments and manual formatting changes will be lost.
+
 dependencies:
   Clojure:
     for: development
-    when: [build-time, run-time]
     url: https://clojure.org/
-  JRE:
-    for: development
-    when: [build-time, run-time]
-    url: https://en.wikipedia.org/wiki/Java_virtual_machine#Java_Runtime_Environment
-  Selmer:
-    for: templating
-    when: [build-time, run-time]
-    url: https://github.com/yogthos/Selmer
+    when:
+    - build-time
+    - run-time
   GraalVM:
     for: building executables
-    when: [build-time]
     url: https://en.wikipedia.org/wiki/GraalVM
+    when:
+    - build-time
+  JRE:
+    for: development
+    url: https://en.wikipedia.org/wiki/Java_virtual_machine#Java_Runtime_Environment
+    when:
+    - build-time
+    - run-time
+  Selmer:
+    for: templating
+    url: https://github.com/yogthos/Selmer
+    when:
+    - build-time
+    - run-time
