@@ -13,3 +13,7 @@ jobs:
           tools-deps: '1.10.1.536'
       - uses: actions/checkout@v2
       - run: bin/build-native-image
+      - uses: actions/upload-artifact@v2
+        with:
+          name: dad-macos-amd64
+          path: target/dad
