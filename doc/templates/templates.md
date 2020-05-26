@@ -1,4 +1,4 @@
-# Document Templates
+# DaD Templates
 
 DaD uses [Selmer][selmer] as its templating system — that, plus [a set of custom filters][filters].
 

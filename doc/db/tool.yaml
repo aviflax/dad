@@ -1,0 +1,33 @@
+# PLEASE NOTE: you are welcome to edit this data, but please be aware
+#              that this file is regularly reprocessed programmatically,
+#              so comments and manual formatting changes will be lost.
+
+dependencies:
+  Clojure:
+    for: programming system, compiler, and runtime
+    url: https://clojure.org/
+    when:
+    - build-time
+    - run-time
+  GraalVM:
+    for: compiler and runtime
+    url: https://en.wikipedia.org/wiki/GraalVM
+    when:
+    - build-time
+  JDK:
+    for: programming system, compiler, and runtime
+    url: https://en.wikipedia.org/wiki/Java_Development_Kit
+    when:
+    - build-time
+  Selmer:
+    for: templating
+    url: https://github.com/yogthos/Selmer
+    when:
+    - build-time
+    - run-time
+scripts:
+  bin/build-native-image:
+    summary: Builds an executable that can run on the same OS and architecture as the machine on which it’s run — without a JRE
+  bin/build-uberjar: {}
+  bin/kaocha:
+    summary: Runs our test runner
