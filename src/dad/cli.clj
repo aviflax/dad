@@ -55,12 +55,20 @@
                                  :as      (str "The path to directory to which the generated"
                                                " documents should be written")
                                  :type    :string
-                                 :default :present}]
+                                 :default :present}
+                                {:option  "watch"
+                                 :as      "Stay resident and re-render templates when they change"
+                                 :type    :with-flag
+                                 :default false}]
                    :runs        render}
                   {:command     "rebuild" ; Maybe rename to `reformat?`
                    :description (str "Reads the database and writes it right back out, normalizing"
                                      " the formatting.")
-                   :opts        [db-opt]
+                   :opts        [db-opt
+                                 {:option  "watch"
+                                  :as      "Stay resident and rebuild the db when any of its files change"
+                                  :type    :with-flag
+                                  :default false}]
                    :runs        rebuild}]})
 
 (defn -main
