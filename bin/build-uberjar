@@ -1,6 +1,8 @@
 #!/bin/sh
 
-set -eux
+set -eu
+
+OUT_PATH=${1:-target/dad.jar}
 
 clojure -Spom
-clojure -R:depstar -m hf.depstar.uberjar target/dad.jar -v -C -m dad.cli
+clojure -R:depstar -m hf.depstar.uberjar "$OUT_PATH" -v -C -m dad.cli

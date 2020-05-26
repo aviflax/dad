@@ -1,0 +1,15 @@
+name: Build distribution artifacts
+on: push
+jobs:
+  native_image:
+    runs-on: macos-10.15
+    steps:
+      - uses: DeLaGuardo/setup-graalvm@3
+        with:
+          graalvm-version: '20.1.0.java8'
+      - run: gu install native-image
+      - uses: DeLaGuardo/setup-clojure@2.0
+        with:
+          tools-deps: '1.10.1.536'
+      - uses: actions/checkout@v2
+      - run: bin/build-native-image
