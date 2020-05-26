@@ -13,13 +13,23 @@
                                         opt-name
                                         s))))))
 
+(defn- on-change
+  [paths f]
+  :TODO)
+
 (defn- render
-  [{:keys [db templates project-root out] :as opts}]
-  (run! (fn [[opt-name s]] (exists?! opt-name s))
-        (select-keys opts [:db :templates :project-root :out]))
+  [{:keys [db templates project-root out] :as _opts}]
   (-> (db/read db)
       (r/build-docs templates project-root)
       (io/write-docs! out templates project-root)))
+
+(defn- render-command
+  [{:keys [db templates watch] :as opts}]
+  (run! (fn [[opt-name s]] (exists?! opt-name s))
+        (select-keys opts [:db :templates :project-root :out]))
+  (if watch
+    (on-change [db templates] #(render opts))
+    (render opts)))
 
 (defn- rebuild
   [{db :db}]
@@ -60,7 +70,7 @@
                                  :as      "Stay resident and re-render templates when they change"
                                  :type    :with-flag
                                  :default false}]
-                   :runs        render}
+                   :runs        render-command}
                   {:command     "rebuild" ; Maybe rename to `reformat?`
                    :description (str "Reads the database and writes it right back out, normalizing"
                                      " the formatting.")
