@@ -6,8 +6,9 @@
 (deftest test-shell
   (tags/register!)
   (are [expected template] (= expected (sp/render template {}))
-    "foo bar"         "{% sh echo -n foo %} bar"                       ; shell builtin
-    "LW4gZm9vCg==\n"  "{% sh /bin/sh -c \"echo -n foo | base64\" %}"   ; not a shell builtin
+    ; Happy paths
+    "foo bar"         "{% sh echo -n foo %} bar"
+    "LW4gZm9vCg==\n"  "{% sh /bin/sh -c \"echo -n foo | base64\" %}"
     
     ; Sad paths
     (str "Command » foo echo « failed: java.io.IOException:"
