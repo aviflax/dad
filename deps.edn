@@ -6,6 +6,9 @@
   medley                {:git/url "https://github.com/weavejester/medley"
                          :sha "6c79c4cce52b276daa3c2b6eaea78f96904bca56"
                          :tag "1.3.0"}
+  scjsv                 {:git/url "https://github.com/metosin/scjsv"
+                         :sha "26607ac57ef760113c6f1406fe609fbe964f8abf"
+                         :tag "0.6.1"}
   selmer                {:mvn/version "1.12.23"}}
 
  :aliases
