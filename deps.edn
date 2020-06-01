@@ -1,5 +1,8 @@
 {:deps
- {clj-commons/clj-yaml  {:mvn/version "0.7.0"}
+ {cli-matic             {:git/url "https://github.com/l3nz/cli-matic"
+                         :sha "2640ad5b6dcc2ae0638f79d0edb9f007351487b0"
+                         :tag "v0.3.11"}
+  clj-commons/clj-yaml  {:mvn/version "0.7.0"}
   medley                {:git/url "https://github.com/weavejester/medley"
                          :sha "6c79c4cce52b276daa3c2b6eaea78f96904bca56"
                          :tag "1.3.0"}
@@ -10,6 +13,6 @@
                           "--illegal-access=deny"
                           "-Dclojure.server.repl={:port,0,:accept,clojure.core.server/repl}"]}
 
-  :run        {:jvm-opts ["-Dapple.awt.UIElement=true" "-Djava.awt.headless=true"]}
-
-  :build-docs {:main-opts ["-m" "dad.cli"]}}}
+  :main        {:main-opts ["-m" "dad.cli"]}
+                :jvm-opts ["-Dapple.awt.UIElement=true"
+                           "-Djava.awt.headless=true"]}}
