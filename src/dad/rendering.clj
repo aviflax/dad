@@ -4,6 +4,7 @@
             [dad.files :as files :refer [relative-path]]
             [dad.yaml :as yaml]
             [dad.rendering.filters :as filters]
+            [dad.rendering.tags :as tags]
             [selmer.parser :as parser :refer [render]]))
 
 (defn- reduce-whitespace
@@ -85,6 +86,7 @@
   contain templates-path."
   [db templates-dir repo-root-dir]
   (filters/register!)
+  (tags/register!)
   (->> (file-seq (file templates-dir))
        (filter (memfn isFile)) ;; TODO: this breaks if there’s a binary file, e.g. .DS_Store
 
