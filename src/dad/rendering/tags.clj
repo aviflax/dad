@@ -30,8 +30,24 @@
        (catch IOException e
          (format "Command » %s « failed: %s" (str/join " " args) e))))
 
+(defn- replace-fn
+  "Returns a custom tag function that’ll take 2 args: this and that, as in “replace this with that”.
+  The first arg (“this”) will be interpreted as a regex. You may use double quotes to wrap the args,
+  e.g. if you want to replace something with nothing: {% replace foo \"\" %}foo{% endreplace %}
+  
+  NB: as usual, the regex will be case-sensitive by default."
+  [tag-name]
+  (fn [[this that :as _args] _context content]
+    (if (and this that)
+      (str/replace (get-in content [tag-name :content])
+                   (re-pattern (unwrap this))
+                   (unwrap that))
+      (str "ERROR: The DaD tag `replace` requires two args: `this` and `that` as in"
+           " “replace this with that”."))))
+
 (def tags
   [[:removeblanklines (collapse-blank-lines-fn :removeblanklines) :endremoveblanklines]
+   [:replace (replace-fn :replace) :endreplace]
    [:exec exec]])
 
 (defn register!

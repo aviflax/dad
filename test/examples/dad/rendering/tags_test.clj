@@ -22,3 +22,34 @@
     
     "Foo\nbar\n"
     "{% removeblanklines %}Foo\n\nbar\n\n\n\n{% endremoveblanklines %}"))
+
+(deftest test-replace
+  (tags/register!)
+  (are [expected template] (= expected (sp/render template {}))
+    ;;;; Happy paths
+
+    ; Simple
+    "Foo\nbar"
+    "{% replace \"\n\n\" \"\n\" %}Foo\n\nbar{% endreplace %}"
+    
+    ;; NOT WORKING
+    ; "Qoo\nbar"
+    ; "{% replace \"\\n\\n\" \"\\n\" %}Qoo\n\nbar{% endreplace %}"
+
+    ; No quotes — NOT WORKING
+    ; "Goo\nbar"
+    ; "{% replace \n\n \n %}Goo\n\nbar{% endreplace %}"
+    
+    ; Using a regex feature
+    "Foo\nbar"
+    "{% replace \"\n{2,}\" \"\n\" %}Foo\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nbar{% endreplace %}"
+    
+    ;;;; Sad paths
+
+    ; No match found
+    "Foo\n\nbar"
+    "{% replace foo bar %}Foo\n\nbar{% endreplace %}"
+    
+    ; Missing arg
+    "ERROR: The DaD tag `replace` requires two args: `this` and `that` as in “replace this with that”."
+    "{% replace foo %}Foo\n\nbar{% endreplace %}"))
