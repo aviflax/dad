@@ -23,6 +23,8 @@
                :jvm-opts  ["-Dapple.awt.UIElement=true"
                            "-Djava.awt.headless=true"]}
   
-  :depstar    {:extra-deps {depstar {:git/url "https://github.com/seancorfield/depstar"
+  :uberjar    {:jvm-opts   ["-Dclojure.compiler.direct-linking=true"
+                            "-Dclojure.spec.skip-macros=true"]
+               :extra-deps {depstar {:git/url "https://github.com/seancorfield/depstar"
                                      :sha "86b64dd0e6e6a3d03020e54537c0cea2b384dbdd"
                                      :tag "v1.0.94"}}}}}
