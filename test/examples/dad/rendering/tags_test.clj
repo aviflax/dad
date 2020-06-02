@@ -17,7 +17,7 @@
 (deftest test-replace
   (tags/register!)
   (are [expected template] (= expected (sp/render template {}))
-    ;; Happy paths
+    ;;;; Happy paths
 
     ; Simple
     "Foo\nbar"
@@ -27,9 +27,12 @@
     "Foo\nbar"
     "{% replace \"\n{2,}\" \"\n\" %}Foo\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nbar{% endreplace %}"
     
-    ;; Sad paths
+    ;;;; Sad paths
+
+    ; No match found
+    "Foo\n\nbar"
+    "{% replace foo bar %}Foo\n\nbar{% endreplace %}"
     
     ; Missing arg
-    ""
-    "{% replace foo %}Foo\n\nbar{% endreplace %}"
-    ))
+    "ERROR: The DaD tag `replace` requires two args: `this` and `that` as in “replace this with that”."
+    "{% replace foo %}Foo\n\nbar{% endreplace %}"))
