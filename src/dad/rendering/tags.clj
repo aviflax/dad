@@ -14,7 +14,7 @@
     (subs s 1 (dec (count s)))
     s))
 
-(defn- sh
+(defn- exec
   [args _context]
   (try (let [{:keys [exit out err] :as _res} (apply shell/sh (map unwrap args))
              err-msg "Command » %s « failed:\nexit code: %s\nstdout: %s\nstderr: %s\n\n"]
@@ -25,7 +25,7 @@
          (format "Command » %s « failed: %s" (str/join " " args) e))))
 
 (def tags
-  {:sh sh})
+  {:exec exec})
 
 (defn register!
   []
