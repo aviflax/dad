@@ -15,6 +15,11 @@
     (subs s 1 (dec (count s)))
     s))
 
+(defn- collapse-blank-lines-fn
+  [tag-name]
+  (fn [_args _context content]
+    (str/replace (get-in content [tag-name :content]) #"\n{2,}" "\n")))
+
 (defn- exec
   [args _context]
   (try (let [{:keys [exit out err] :as _res} (apply shell/sh (map unwrap args))
@@ -40,8 +45,19 @@
       (str "ERROR: The DaD tag `replace` requires two args: `this` and `that` as in"
            " “replace this with that”."))))
 
+(defn- sh
+  [args _context]
+  (try (let [{:keys [exit out err] :as _res} (apply shell/sh (map unwrap args))
+             err-msg "Command » %s « failed:\nexit code: %s\nstdout: %s\nstderr: %s\n\n"]
+         (if (zero? exit)
+           out
+           (format err-msg (str/join " " args) exit out err)))
+       (catch IOException e
+         (format "Command » %s « failed: %s" (str/join " " args) e))))
+
 (def tags
-  [[:replace (replace-fn :replace) :endreplace]
+  [[:collapseblanklines (collapse-blank-lines-fn :collapseblanklines) :endcollapseblanklines]
+   [:replace (replace-fn :replace) :endreplace]
    [:exec exec]])
 
 (defn register!

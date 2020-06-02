@@ -14,6 +14,15 @@
     (str "Command » foo echo « failed: java.io.IOException:"
          " Cannot run program \"foo\": error=2, No such file or directory")  "{% exec foo echo %}"))
 
+(deftest test-collapseblanklines
+  (tags/register!)
+  (are [expected template] (= expected (sp/render template {}))
+    "Foo\nbar"
+    "{% collapseblanklines %}Foo\n\nbar{% endcollapseblanklines %}"
+    
+    "Foo\nbar\n"
+    "{% collapseblanklines %}Foo\n\nbar\n\n\n\n{% endcollapseblanklines %}"))
+
 (deftest test-replace
   (tags/register!)
   (are [expected template] (= expected (sp/render template {}))
@@ -22,6 +31,14 @@
     ; Simple
     "Foo\nbar"
     "{% replace \"\n\n\" \"\n\" %}Foo\n\nbar{% endreplace %}"
+    
+    ;; NOT WORKING
+    ; "Qoo\nbar"
+    ; "{% replace \"\\n\\n\" \"\\n\" %}Qoo\n\nbar{% endreplace %}"
+
+    ; No quotes — NOT WORKING
+    ; "Goo\nbar"
+    ; "{% replace \n\n \n %}Goo\n\nbar{% endreplace %}"
     
     ; Using a regex feature
     "Foo\nbar"
