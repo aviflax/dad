@@ -56,7 +56,7 @@
          (format "Command » %s « failed: %s" (str/join " " args) e))))
 
 (def tags
-  [[:collapseblanklines (collapse-blank-lines-fn :collapseblanklines) :endcollapseblanklines]
+  [[:removeblanklines (collapse-blank-lines-fn :removeblanklines) :endremoveblanklines]
    [:replace (replace-fn :replace) :endreplace]
    [:exec exec]])
 

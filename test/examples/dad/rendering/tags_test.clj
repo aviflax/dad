@@ -14,14 +14,14 @@
     (str "Command » foo echo « failed: java.io.IOException:"
          " Cannot run program \"foo\": error=2, No such file or directory")  "{% exec foo echo %}"))
 
-(deftest test-collapseblanklines
+(deftest test-removeblanklines
   (tags/register!)
   (are [expected template] (= expected (sp/render template {}))
     "Foo\nbar"
-    "{% collapseblanklines %}Foo\n\nbar{% endcollapseblanklines %}"
+    "{% removeblanklines %}Foo\n\nbar{% endremoveblanklines %}"
     
     "Foo\nbar\n"
-    "{% collapseblanklines %}Foo\n\nbar\n\n\n\n{% endcollapseblanklines %}"))
+    "{% removeblanklines %}Foo\n\nbar\n\n\n\n{% endremoveblanklines %}"))
 
 (deftest test-replace
   (tags/register!)
