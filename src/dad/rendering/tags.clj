@@ -9,7 +9,8 @@
   are preserved as scalar values. But for some reason it includes those double-quotes as part of the
   values. We don’t want them, so this removes them."
   [s]
-  (if (and (str/starts-with? s "\"")
+  (if (and (string? s)
+           (str/starts-with? s "\"")
            (str/ends-with? s "\""))
     (subs s 1 (dec (count s)))
     s))
@@ -24,10 +25,23 @@
        (catch IOException e
          (format "Command » %s « failed: %s" (str/join " " args) e))))
 
+(defn- replace-fn
+  "Returns a custom tag function that’ll take 2 args: this and that, as in “replace this with that”.
+  The first arg (“this”) will be interpreted as a regex. You may use double quotes to wrap the args,
+  e.g. if you want to replace something with nothing: {% replace foo \"\" %}foo{% endreplace %}"
+  [tag-name]
+  (fn [[this that :as _args] _context content]
+    (str/replace (get-in content [tag-name :content])
+                 (re-pattern (unwrap this))
+                 (unwrap that))))
+
 (def tags
-  {:exec exec})
+  [[:replace (replace-fn :replace) :endreplace]
+   [:exec exec]])
 
 (defn register!
   []
-  (doseq [[name f] tags]
-    (sp/add-tag! name f)))
+  (doseq [[opening f closing] tags]
+    (if closing ; we can’t use apply because add-tag! is a macro
+      (sp/add-tag! opening f closing)
+      (sp/add-tag! opening f))))
