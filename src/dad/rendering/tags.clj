@@ -9,10 +9,16 @@
   are preserved as scalar values. But for some reason it includes those double-quotes as part of the
   values. We don’t want them, so this removes them."
   [s]
-  (if (and (str/starts-with? s "\"")
+  (if (and (string? s)
+           (str/starts-with? s "\"")
            (str/ends-with? s "\""))
     (subs s 1 (dec (count s)))
     s))
+
+(defn- collapse-blank-lines-fn
+  [tag-name]
+  (fn [_args _context content]
+    (str/replace (get-in content [tag-name :content]) #"\n{2,}" "\n")))
 
 (defn- exec
   [args _context]
@@ -25,9 +31,12 @@
          (format "Command » %s « failed: %s" (str/join " " args) e))))
 
 (def tags
-  {:exec exec})
+  [[:removeblanklines (collapse-blank-lines-fn :removeblanklines) :endremoveblanklines]
+   [:exec exec]])
 
 (defn register!
   []
-  (doseq [[name f] tags]
-    (sp/add-tag! name f)))
+  (doseq [[opening f closing] tags]
+    (if closing ; we can’t use apply because add-tag! is a macro
+      (sp/add-tag! opening f closing)
+      (sp/add-tag! opening f))))
