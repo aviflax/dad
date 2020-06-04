@@ -1,7 +1,9 @@
 (ns dad.rendering.tags-test
   (:require [clojure.test :refer [are deftest is]]
             [dad.rendering.tags :as tags]
-            [selmer.parser :as sp]))
+            [selmer.parser :as sp])
+  (:import [clojure.lang ExceptionInfo]
+           [java.io IOException]))
 
 (deftest test-exec
   (tags/register!)
@@ -11,8 +13,13 @@
     "foo bar"         "{% exec echo -n foo %} bar"
     "LW4gZm9vCg==\n"  "{% exec /bin/sh -c \"echo -n foo | base64\" %}")
 
-  (is (thrown? Exception (sp/render "{% exec foo echo %}" {})))
-  (is (thrown? Exception (sp/render "{% exec /bin/sh -c 'exit 1' %}" {}))))
+  (is (thrown-with-msg? IOException
+                        #"^Cannot run program.+foo.+No such file"
+                        (sp/render "{% exec foo echo %}" {})))
+
+  (is (thrown-with-msg? ExceptionInfo
+                        #"^Command.+sh.+failed"
+                        (sp/render "{% exec /bin/sh -c 'exit 1' %}" {}))))
 
 (deftest test-removeblanklines
   (tags/register!)
