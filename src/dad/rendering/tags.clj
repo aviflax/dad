@@ -31,13 +31,11 @@
 
 (defn- exec
   [args _context]
-  (try (let [{:keys [exit out err] :as _res} (apply shell/sh (map unwrap args))
-             err-msg "Command » %s « failed:\nexit code: %s\nstdout: %s\nstderr: %s\n\n"]
-         (if (zero? exit)
-           out
-           (format err-msg (str/join " " args) exit out err)))
-       (catch IOException e
-         (format "Command » %s « failed: %s" (str/join " " args) e))))
+  (let [{:keys [exit out err] :as _res} (apply shell/sh (map unwrap args))]
+    (if (zero? exit)
+      out
+      (throw (Exception. (format "Command » %s « failed:\nexit code: %s\nstdout: %s\nstderr: %s\n\n"
+                                 (str/join " " args) exit out err))))))
 
 (def tags
   [remove-blank-lines
