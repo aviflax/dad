@@ -1,8 +1,7 @@
 (ns dad.rendering.tags
   (:require [clojure.java.shell :as shell]
             [clojure.string :as str]
-            [selmer.parser :as sp])
-  (:import [java.io IOException]))
+            [selmer.parser :as sp]))
 
 (defn- unwrap
   "When Selmer parses tag args, it respects strings that are bounded by double-quotes — such strings
@@ -30,14 +29,15 @@
             closing-tag)))
 
 (defn- exec
+  "If the program named in the first arg doesn’t exist, an IOException will be thrown. If it exists,
+  but exits with a non-zero exit code, a clojure.lang.ExceptionInfo will be thrown with its data
+  map containing the keys :stdout and :stderr."
   [args _context]
-  (try (let [{:keys [exit out err] :as _res} (apply shell/sh (map unwrap args))
-             err-msg "Command » %s « failed:\nexit code: %s\nstdout: %s\nstderr: %s\n\n"]
-         (if (zero? exit)
-           out
-           (format err-msg (str/join " " args) exit out err)))
-       (catch IOException e
-         (format "Command » %s « failed: %s" (str/join " " args) e))))
+  (let [{:keys [exit out err] :as _res} (apply shell/sh (map unwrap args))]
+    (if (zero? exit)
+      out
+      (throw (ex-info (format "Command » %s « failed with exit code %s" (str/join " " args) exit)
+                      {:stdout out :stderr err})))))
 
 (def tags
   [remove-blank-lines
