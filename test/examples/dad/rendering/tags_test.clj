@@ -11,7 +11,7 @@
   (are [expected template] (= expected (sp/render template {}))
     ; Happy paths
     "foo bar"         "{% exec echo -n foo %} bar"
-    "LW4gZm9vCg==\n"  "{% exec /bin/sh -c \"echo -n foo | base64\" %}")
+    "Zm9vCg==\n"  "{% exec /bin/sh -c \"echo foo | base64\" %}")
 
   (is (thrown-with-msg? IOException
                         #"^Cannot run program.+foo.+No such file"
