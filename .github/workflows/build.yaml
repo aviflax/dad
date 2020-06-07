@@ -2,7 +2,7 @@ name: Build distribution artifacts
 on: push
 jobs:
   native_image:
-    timeout-minutes: 60
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
       - uses: DeLaGuardo/setup-graalvm@3

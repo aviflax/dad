@@ -1,7 +1,7 @@
 {:deps
  {org.clojure/clojure   {:mvn/version "1.10.2-alpha1"} ; Enables GraalVM native-image compilation
   cli-matic             {:git/url "https://github.com/FundingCircle/cli-matic" ; See PR_LINK_REQUIRED
-                         :sha "6c2cdad7c63e677701ac543946348adcf3bd77ec"}
+                         :sha "be62a750c1afa510d6dbc7e85a66aab11093cbc3"}
   clj-commons/clj-yaml  {:mvn/version "0.7.0"}
   medley                {:git/url "https://github.com/weavejester/medley"
                          :sha "6c79c4cce52b276daa3c2b6eaea78f96904bca56"
