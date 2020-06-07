@@ -21,5 +21,3 @@ native-image \
     "-J-Xms6g" \
     "-J-Xmx6g" \
     target/dad
-
-which say &>/dev/null && say "ATTENTION: AUTOMATED EXECUTABLE GENERATION PROCEDURE IS COMPLETE."
