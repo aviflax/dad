@@ -1,7 +1,9 @@
 {:deps
- {cli-matic             {:git/url "https://github.com/l3nz/cli-matic"
-                         :sha "2640ad5b6dcc2ae0638f79d0edb9f007351487b0"
-                         :tag "v0.3.11"}
+ {; See https://github.com/l3nz/cli-matic/pull/114 for the reason behind this (hopefully temporary)
+  ; fork.
+  cli-matic             {:git/url "https://github.com/FundingCircle/cli-matic"
+                         :sha "28c5148c32e6eb841c452dc9a5f06ee33d5c66c9"}
+
   clj-commons/clj-yaml  {:mvn/version "0.7.0"}
   medley                {:git/url "https://github.com/weavejester/medley"
                          :sha "6c79c4cce52b276daa3c2b6eaea78f96904bca56"
