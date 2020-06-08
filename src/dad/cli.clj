@@ -1,4 +1,5 @@
 (ns dad.cli
+  (:gen-class)
   (:require [cli-matic.core :refer [run-cmd]]
             [clojure.java.io :refer [file]]
             [dad.db :as db]

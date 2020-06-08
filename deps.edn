@@ -1,5 +1,7 @@
 {:deps
- {; See https://github.com/l3nz/cli-matic/pull/114 for the reason behind this (hopefully temporary)
+ {org.clojure/clojure   {:mvn/version "1.10.2-alpha1"}
+
+  ; See https://github.com/l3nz/cli-matic/pull/114 for the reason behind this (hopefully temporary)
   ; fork.
   cli-matic             {:git/url "https://github.com/FundingCircle/cli-matic"
                          :sha "28c5148c32e6eb841c452dc9a5f06ee33d5c66c9"}
@@ -11,15 +13,21 @@
   selmer                {:mvn/version "1.12.23"}}
 
  :aliases
- {:dev   {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"
-                     "--illegal-access=deny"
-                     "-Dclojure.server.repl={:port,0,:accept,clojure.core.server/repl}"]}
-
-  :test  {:extra-paths ["test"]
-          :extra-deps  {kaocha {:git/url "https://github.com/lambdaisland/kaocha"
-                                :sha "c97184a30a604da92a86d4207ed7e26b67881e5c"
-                                :tag "v1.0.629"}}}
-
-  :main  {:main-opts ["-m" "dad.cli"]}
-          :jvm-opts  ["-Dapple.awt.UIElement=true"
-                      "-Djava.awt.headless=true"]}}
+ {:dev        {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"
+                          "--illegal-access=deny"
+                          "-Dclojure.server.repl={:port,0,:accept,clojure.core.server/repl}"]}
+  
+  :test       {:extra-paths ["test"]
+               :extra-deps  {kaocha {:git/url "https://github.com/lambdaisland/kaocha"
+                                     :sha "c97184a30a604da92a86d4207ed7e26b67881e5c"
+                                     :tag "v1.0.629"}}}
+  
+  :main       {:main-opts ["-m" "dad.cli"]
+               :jvm-opts  ["-Dapple.awt.UIElement=true"
+                           "-Djava.awt.headless=true"]}
+  
+  :uberjar    {:jvm-opts   ["-Dclojure.compiler.direct-linking=true"
+                            "-Dclojure.spec.skip-macros=true"]
+               :extra-deps {depstar {:git/url "https://github.com/seancorfield/depstar"
+                                     :sha "86b64dd0e6e6a3d03020e54537c0cea2b384dbdd"
+                                     :tag "v1.0.94"}}}}}
