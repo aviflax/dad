@@ -1,0 +1,27 @@
+name: push
+on: push
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [macos-10.15, ubuntu-18.04]
+        java: [11, 13, 14]
+        suite: [examples] # We don’t have any other suites yet but we hope to, soon!
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        env: { cache-version: v1 }
+        with:
+          path: |
+            .cpcache
+            ~/.m2
+            ~/.gitlibs
+          key: ${{ runner.os }}-${{ github.workflow }}-${{ env.cache-version }}-${{ hashFiles('deps.edn') }}
+      - uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java }}
+          java-package: jre
+      - uses: DeLaGuardo/setup-clojure@2.0
+        with: { tools-deps: '1.10.1.536' }
+      - run: bin/kaocha ${{ matrix.suite }}
