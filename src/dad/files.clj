@@ -2,13 +2,16 @@
   (:require [clojure.java.io :refer [file]])
   (:import [java.nio.file Path]))
 
+(set! *warn-on-reflection* true)
+
 (defn absolute-path
   "Accepts a path as a Path, File, or String; returns an absolute Path."
+  ^Path
   [fp]
-  (-> (if (instance? Path fp)
-        fp
-        (.toPath (file fp)))
-      (.toAbsolutePath)))
+  (let [^Path p (if (instance? Path fp)
+                  fp
+                  (.toPath (file fp)))]
+    (.toAbsolutePath p)))
 
 (defn parent-dir
   [fp]

@@ -1,9 +1,12 @@
 (ns dad.cli
+  (:gen-class)
   (:require [cli-matic.core :refer [run-cmd]]
             [clojure.java.io :refer [file]]
             [dad.db :as db]
             [dad.io :as io]
             [dad.rendering :as r]))
+
+(set! *warn-on-reflection* true)
 
 (defn- exists?!
   [opt-name s]

@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2016
+
+set -eu
+
+UBERJAR_PATH="target/dad.jar"
+
+if [ ! -f "$UBERJAR_PATH" ]; then
+  bin/build-uberjar "$UBERJAR_PATH"
+fi
+
+native-image \
+    -jar "$UBERJAR_PATH" \
+    -H:Name=dad \
+    -H:+ReportExceptionStackTraces \
+    --initialize-at-build-time \
+    --report-unsupported-elements-at-runtime \
+    --verbose \
+    --no-fallback \
+    --no-server \
+    "-J-Xms6g" \
+    "-J-Xmx6g" \
+    target/dad

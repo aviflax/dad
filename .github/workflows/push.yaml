@@ -25,3 +25,33 @@ jobs:
       - uses: DeLaGuardo/setup-clojure@2.0
         with: { tools-deps: '1.10.1.536' }
       - run: bin/kaocha ${{ matrix.suite }}
+
+  build:
+    name: Build executables
+    strategy:
+      matrix:
+        os: [macos-10.15, ubuntu-18.04]
+    timeout-minutes: 30
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: DeLaGuardo/setup-graalvm@3
+        with:
+          graalvm-version: '20.1.0.java8'
+      - run: gu install native-image
+      - uses: DeLaGuardo/setup-clojure@2.0
+        with:
+          tools-deps: '1.10.1.536'
+      - uses: actions/checkout@v2
+      - run: bin/build-native-image
+      - name: Upload artifact
+        if: ${{ success() && contains(matrix.os, 'ubuntu') }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: dad-linux-amd64
+          path: target/dad
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        if: ${{ success() && contains(matrix.os, 'macos') }}
+        with:
+          name: dad-mac-amd64
+          path: target/dad
