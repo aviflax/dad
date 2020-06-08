@@ -1,5 +1,19 @@
-name: push
-on: push
+name: Test & Build
+
+on:
+  push:
+    paths:
+      - '.circleci/**'
+      - 'bin/**'
+      - 'deps.edn'
+      - 'src/**'
+      - 'test/**'
+      - 'tests.edn'
+
+  # Only runs when the pull_request event’s activity type is opened, synchronize, or reopened.
+  # https://help.github.com/en/actions/reference/events-that-trigger-workflows#pull-request-event-pull_request
+  pull_request: {}
+  
 jobs:
   test:
     strategy:
