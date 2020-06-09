@@ -15,12 +15,12 @@
   [rs-name rows ds]
   nil)
 
-(defn- recordset->table
-  "On success, returns nil. On failure, returns "
-  [[rs-name rs-recs :as _recordset] ds]
+(defn- recordset->tables
+  "Transforms the recordset into one or more tables. The recordset should either a MapEntry or a
+  two-tuple. Returns a map."
+  [[rs-name rs-recs :as _recordset]]
   (let [rows (e/flatten-paths rs-recs map-path-separator)]
-    (create-table rs-name rows ds)
-    (insert-rows rs-name rows ds)))
+    nil))
 
 (defn db->sqlite
   "On success, returns true."
@@ -28,7 +28,7 @@
   (let [db-spec {:dbtype "sqlite" :dbname db-out-path}
         ds (j/get-datasource db-spec)]
     (doseq [recordset dad-db]
-      (recordset->table recordset ds))
+      (recordset->tables recordset ds))
     nil))
 
 (comment
@@ -37,8 +37,10 @@
   (def db-path "/Users/avi.flax/dev/docs/architecture/docs-as-data/db")
   
   (def db (d/read db-path))
-  
+  (keys db)
   (-> db :technologies (select-keys ["Clojure"]))
   
-  (e/flatten-paths (get-in db [:technologies "Clojure"]) map-path-separator)
+  (defn rand-val [m] (-> m seq rand-nth val))
+  
+  (e/flatten-paths (-> db rand-val rand-val) map-path-separator)
   )
