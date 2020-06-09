@@ -1,5 +1,10 @@
 {:deps
  {org.clojure/clojure   {:mvn/version "1.10.2-alpha1"}
+ 
+  anomalies               {:git/url "https://github.com/cognitect-labs/anomalies"
+                           :sha "2decbbb3ffd8e919c67d29f39ec6d920575f65c3"
+                           :tag "0.1.12"
+                           :deps/manifest :deps}
 
   ; See https://github.com/l3nz/cli-matic/pull/114 for the reason behind this (hopefully temporary)
   ; fork.
