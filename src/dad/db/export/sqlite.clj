@@ -20,8 +20,7 @@
   [[rs-name rs-recs :as _recordset] ds]
   (let [rows (e/flatten-paths rs-recs map-path-separator)]
     (create-table rs-name rows ds)
-    (insert-rows rs-name rows ds)
-    ))
+    (insert-rows rs-name rows ds)))
 
 (defn db->sqlite
   "On success, returns true."
@@ -33,6 +32,13 @@
     nil))
 
 (comment
+  ;(require '[dad.db :as d])
   
+  (def db-path "/Users/avi.flax/dev/docs/architecture/docs-as-data/db")
   
+  (def db (d/read db-path))
+  
+  (-> db :technologies (select-keys ["Clojure"]))
+  
+  (e/flatten-paths (get-in db [:technologies "Clojure"]) map-path-separator)
   )

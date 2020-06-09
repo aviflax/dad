@@ -22,6 +22,15 @@
   next-jdbc               {:git/url "https://github.com/seancorfield/next-jdbc"
                            :sha "6d362ab611e5473f5b855563a827639519dd4ba5"
                            :tag "v1.0.462"}
+  
+  ; We use Cheshire for exporting to SQLite — not because we specifically need its features or
+  ; speed; we need *some* JSON library so we can convert flat seqs to JSON arrays as strings,
+  ; for storage in table cells of type TEXT, because Datasette supports such JSON values in
+  ; table cells. We’re using Cheshire specifically for this because it’s already included in the
+  ; project via Selmer.
+  ; NB: ensure that the version of Cheshire specified here matches that specified by the version of
+  ; Selmer we’re using.
+  cheshire/cheshire     {:mvn/version "5.8.1"}
 
   ; For rendering templates • https://github.com/yogthos/Selmer
   selmer                {:mvn/version "1.12.23"}}
