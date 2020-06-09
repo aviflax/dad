@@ -16,6 +16,21 @@
   medley                {:git/url "https://github.com/weavejester/medley"
                          :sha "6c79c4cce52b276daa3c2b6eaea78f96904bca56"
                          :tag "1.3.0"}
+  
+  ; For exporting to SQLite
+  org.xerial/sqlite-jdbc  {:mvn/version "3.31.1"} ; https://github.com/xerial/sqlite-jdbc
+  next-jdbc               {:git/url "https://github.com/seancorfield/next-jdbc"
+                           :sha "6d362ab611e5473f5b855563a827639519dd4ba5"
+                           :tag "v1.0.462"}
+  
+  ; We use Cheshire for exporting to SQLite — not because we specifically need its features or
+  ; speed; we need *some* JSON library so we can convert flat seqs to JSON arrays as strings,
+  ; for storage in table cells of type TEXT, because Datasette supports such JSON values in
+  ; table cells. We’re using Cheshire specifically for this because it’s already included in the
+  ; project via Selmer.
+  ; NB: ensure that the version of Cheshire specified here matches that specified by the version of
+  ; Selmer we’re using.
+  cheshire/cheshire     {:mvn/version "5.8.1"}
 
   ; For rendering templates
   selmer                {:mvn/version "1.12.23"} ; https://github.com/yogthos/Selmer
