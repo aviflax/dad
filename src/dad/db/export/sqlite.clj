@@ -21,9 +21,7 @@
 
 (defn db->sqlite
   "On success, returns true."
-  [dad-db db-out-path]
-  (let [db-spec {:dbtype "sqlite" :dbname db-out-path}
-        ds (j/get-datasource db-spec)]
-    (doseq [recordset dad-db]
-      (e/recordset->tables recordset))
-    nil))
+  [flattened-dad-db db-out-path]
+  (let [out-db-spec {:dbtype "sqlite" :dbname db-out-path}
+        out-ds (j/get-datasource out-db-spec)]
+    :TODO))

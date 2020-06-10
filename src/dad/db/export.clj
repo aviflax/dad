@@ -53,6 +53,11 @@
         rows2 (map #(split-record rs-name %) rows)]
     rows2))
 
+(defn flatten-db
+  [db]
+  (->> (mapcat recordset->tables db)
+       (reduce merge)))
+
 (comment
   ;(require '[dad.db :as db])
   
@@ -68,5 +73,10 @@
       (update :technologies #(select-keys % ["Clojure"]))
       (find :technologies)
       (recordset->tables))
+      
+  (-> (select-keys db [:technologies])
+      (update :technologies #(select-keys % ["Clojure"]))
+      (assoc :systems (select-keys (:systems db) ["BILCAS"]))
+      (flatten-db))
     
   )
