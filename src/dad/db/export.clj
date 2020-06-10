@@ -22,7 +22,7 @@
                  [(->> (conj path k)
                        (join-names separator)) v]))
              m)
-        (into (empty m)))))
+        (into {}))))
 
 (defn- add-fk
   [rec-m fk-table-name fk-table-key-val]
