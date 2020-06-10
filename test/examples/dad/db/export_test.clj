@@ -1,6 +1,7 @@
 (ns dad.db.export-test
   (:require [clojure.test :refer [deftest is are testing]]
-            [dad.db.export :as e]))
+            [dad.db.export :as e]
+            [medley.core :as mc :refer [map-entry]]))
 
 (deftest add-fk
   (let [rec-m {"type" "assess"
@@ -16,12 +17,12 @@
     (is (= expected-meta (meta res)))))
 
 (deftest recordset->tables
-  (let [recordset {:technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
-                                             "recommendations" [{"type" "assess"
-                                                                 "date" "2011-09-15"}
-                                                                {"type" "adopt"
-                                                                 "date" "2012-01-12"}]}}}
-        expected {:technologies {"Clojure" {"links-main" "https://clojure.org/"}}
+  (let [recordset (map-entry :technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
+                                                       "recommendations" [{"type" "assess"
+                                                                           "date" "2011-09-15"}
+                                                                          {"type" "adopt"
+                                                                           "date" "2012-01-12"}]}})
+        expected {:technologies {"Clojure" {:links-main "https://clojure.org/"}}
                   :technologies-recommendations [{:technology "Clojure"
                                                   "type" "assess"
                                                   "date" "2011-09-15"}
@@ -29,4 +30,6 @@
                                                   "type" "adopt"
                                                   "date" "2012-01-12"}]}
         res (#'e/recordset->tables recordset)]
-  (is (= expected res))))
+  (is (= expected res))
+  (is (= {::e/columns {:technology {::e/fk-table-name :technologies}}}
+         (meta (first (:technologies-recommendations res)))))))

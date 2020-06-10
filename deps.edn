@@ -55,9 +55,11 @@
  :aliases
  {:dev        {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"
                           "--illegal-access=deny"
-                          "-Dclojure.server.repl={:port,0,:accept,clojure.core.server/repl}"]}
+                          "-Dclojure.server.repl={:port,0,:accept,clojure.core.server/repl}"]
+               :main-opts ["-e" "(.getLocalPort,(get-in,@#'clojure.core.server/servers,[\"repl\",:socket]))"
+                           "-r"]}
   
-  :test       {:extra-paths ["test" "test/examples"]
+  :test       {:extra-paths ["test"]
                :extra-deps  {kaocha {:git/url "https://github.com/lambdaisland/kaocha"
                                      :sha "c97184a30a604da92a86d4207ed7e26b67881e5c"
                                      :tag "v1.0.629"}}}

@@ -20,7 +20,6 @@
      (with-meta {:technology "Clojure", "type" "adopt", "date" "2012-01-12"}
                 {::e/columns {:technology {::e/fk-table-name :technologies}}})]
     {:create-table :technologies-recommendations
-     :columns ["id int auto_increment primary key"
-               "technology varchar(255) not null references technologies"
+     :columns ["technology varchar(255) not null references technologies"
                "type text"
                "date text"]}))

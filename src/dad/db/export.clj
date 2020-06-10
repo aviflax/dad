@@ -39,7 +39,8 @@
   (reduce-kv
     (fn [r k v]
       (if (and (coll? v)
-               (map? (first v)))
+               (or (map? v)
+                   (map? (first v))))
         (assoc r (join-names separator [table-name k]) (map #(add-fk % table-name rec-key) v))
         (assoc-in r [table-name rec-key k] v)))
     {}
@@ -49,9 +50,9 @@
   "Transforms the recordset into one or more tables. The recordset should either a MapEntry or a
   two-tuple. Returns a map."
   [[rs-name rs-recs :as _recordset]]
-  (let [rows (map-vals #(e/flatten-paths % separator) rs-recs)
-        rows2 (map #(split-record rs-name %) rows)]
-    rows2))
+  (->> (map-vals #(e/flatten-paths % separator) rs-recs)
+       (map #(split-record rs-name %))
+       (reduce merge)))
 
 (defn flatten-db
   [db]
@@ -72,7 +73,18 @@
   (-> (select-keys db [:technologies])
       (update :technologies #(select-keys % ["Clojure"]))
       (find :technologies)
-      (recordset->tables))
+      recordset->tables
+      :technologies-recommendations
+      first
+      meta)
+
+  (-> (select-keys db [:technologies])
+      (update :technologies #(select-keys % ["Clojure"]))
+      (find :technologies)
+      recordset->tables
+      :technologies-recommendations
+      first
+      meta)
       
   (-> (select-keys db [:technologies])
       (update :technologies #(select-keys % ["Clojure"]))
