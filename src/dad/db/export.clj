@@ -12,7 +12,7 @@
        (keyword)))
 
 (defn- flatten-paths
-  {:source "https://andersmurphy.com/2019/11/30/clojure-flattening-key-paths.html"}
+  {:derived-from "https://andersmurphy.com/2019/11/30/clojure-flattening-key-paths.html"}
   ([m separator]
    (flatten-paths m separator []))
   ([m separator path]
@@ -73,10 +73,7 @@
   (-> (select-keys db [:technologies])
       (update :technologies #(select-keys % ["Clojure"]))
       (find :technologies)
-      recordset->tables
-      :technologies-recommendations
-      first
-      meta)
+      recordset->tables)
 
   (-> (select-keys db [:technologies])
       (update :technologies #(select-keys % ["Clojure"]))
