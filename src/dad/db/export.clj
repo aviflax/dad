@@ -48,10 +48,10 @@
   (def db-path "/Users/avi.flax/dev/docs/architecture/docs-as-data/db")
   
   (def db (db/read db-path))
-  (keys db)
-  (-> db :technologies (select-keys ["Clojure"]))
+
+  ; (-> db :technologies (select-keys ["Clojure"]))
   
-  (defn rand-val [m] (-> m seq rand-nth val))
+  ; (defn rand-val [m] (-> m seq rand-nth val))
   
   (-> (select-keys db [:technologies])
       (update :technologies #(select-keys % ["Clojure"]))
