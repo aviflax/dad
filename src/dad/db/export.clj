@@ -5,6 +5,12 @@
             [inflections.core :refer [singular]]
             [medley.core :as mc :refer [map-vals]]))
 
+(defn- join-names
+  [separator names]
+  (->> (map name names)
+       (str/join separator)
+       (keyword)))
+
 (defn- flatten-paths
   {:source "https://andersmurphy.com/2019/11/30/clojure-flattening-key-paths.html"}
   ([m separator]
@@ -14,9 +20,7 @@
                (if (and (map? v) (not-empty v))
                  (flatten-paths v separator (conj path k))
                  [(->> (conj path k)
-                       (map name)
-                       (str/join separator)
-                       keyword) v]))
+                       (join-names separator)) v]))
              m)
         (into {}))))
 
@@ -26,6 +30,8 @@
     (-> (assoc rec-m col-name fk-table-key-val)
         (with-meta {::columns {col-name {::fk-table-name fk-table-name}}}))))
 
+(def separator "-")
+
 (defn- split-record
   "Accepts a table name and a map representing a single record, as a MapEntry.
    Returns a map of table name to maps representing records."
@@ -34,18 +40,16 @@
     (fn [r k v]
       (if (and (coll? v)
                (map? (first v)))
-        (assoc r k (map #(add-fk % table-name rec-key) v))
+        (assoc r (join-names separator [table-name k]) (map #(add-fk % table-name rec-key) v))
         (assoc-in r [table-name rec-key k] v)))
     {}
     rec-m))
-
-(def map-path-separator "-")
 
 (defn recordset->tables
   "Transforms the recordset into one or more tables. The recordset should either a MapEntry or a
   two-tuple. Returns a map."
   [[rs-name rs-recs :as _recordset]]
-  (let [rows (map-vals #(e/flatten-paths % map-path-separator) rs-recs)
+  (let [rows (map-vals #(e/flatten-paths % separator) rs-recs)
         rows2 (map #(split-record rs-name %) rows)]
     rows2))
 

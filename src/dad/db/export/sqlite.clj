@@ -14,6 +14,11 @@
   [rs-name rows ds]
   nil)
 
+(defn table->ddl
+  "Accepts a ::dad.db.export/table, returns a ::dad.db.export/ddl-statement"
+  [table-name rows]
+  nil)
+
 (defn db->sqlite
   "On success, returns true."
   [dad-db db-out-path]
