@@ -22,7 +22,7 @@
                  [(->> (conj path k)
                        (join-names separator)) v]))
              m)
-        (into {}))))
+        (into (empty m)))))
 
 (defn- add-fk
   [rec-m fk-table-name fk-table-key-val]
@@ -56,7 +56,7 @@
 
 (defn flatten-db
   [db]
-  (->> (mapcat recordset->tables db)
+  (->> (map recordset->tables db)
        (reduce merge)))
 
 (comment
