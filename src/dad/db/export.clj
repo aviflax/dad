@@ -2,6 +2,7 @@
   (:require [clojure.string :as str]
             [clojure.spec.alpha :as s]
             [dad.db.export :as e]
+            [inflections.core :refer [singular]]
             [medley.core :as mc :refer [map-vals]]))
 
 (defn- flatten-paths
@@ -19,6 +20,12 @@
              m)
         (into {}))))
 
+(defn- add-fk
+  [rec-m fk-table-name fk-table-key-val]
+  (let [col-name (singular fk-table-name)]
+    (-> (assoc rec-m col-name fk-table-key-val)
+        (with-meta {::columns {col-name {::fk-table-name fk-table-name}}}))))
+
 (defn- split-record
   "Accepts a table name and a map representing a single record, as a MapEntry.
    Returns a map of table name to maps representing records."
@@ -27,7 +34,7 @@
     (fn [r k v]
       (if (and (coll? v)
                (map? (first v)))
-        (assoc r k (zipmap (drop 1 (range)) v))
+        (assoc r k (map #(add-fk % table-name rec-key) v))
         (assoc-in r [table-name rec-key k] v)))
     {}
     rec-m))

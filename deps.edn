@@ -33,14 +33,29 @@
   cheshire/cheshire     {:mvn/version "5.8.1"}
 
   ; For rendering templates • https://github.com/yogthos/Selmer
-  selmer                {:mvn/version "1.12.23"}}
+  selmer                {:mvn/version "1.12.23"}
 
+; For converting words between singular and plural and vice-versa
+inflections {:git/url "https://github.com/r0man/inflections-clj"
+             :sha "70d390f0e60a620c6ecc6090239006de922bd159"
+             :tag "0.13.2"
+             :deps/manifest :deps}
+
+; Required by inflections, which doesn’t have an actual deps.edn
+noencore    {:git/url "https://github.com/r0man/noencore"
+             :sha "b17defdaabdd301817e196af4616ecb9bfe349cb"
+             :tag "0.3.6"
+             :deps/manifest :deps}
+
+; Required by noencore, which doesn’t have an actual deps.edn
+commons-codec/commons-codec {:mvn/version "1.11"}}
+ 
  :aliases
  {:dev        {:jvm-opts ["-XX:-OmitStackTraceInFastThrow"
                           "--illegal-access=deny"
                           "-Dclojure.server.repl={:port,0,:accept,clojure.core.server/repl}"]}
   
-  :test       {:extra-paths ["test"]
+  :test       {:extra-paths ["test" "test/examples"]
                :extra-deps  {kaocha {:git/url "https://github.com/lambdaisland/kaocha"
                                      :sha "c97184a30a604da92a86d4207ed7e26b67881e5c"
                                      :tag "v1.0.629"}}}
