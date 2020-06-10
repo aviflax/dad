@@ -15,15 +15,15 @@
                                                  {"technology" "Clojure"
                                                   "type" "adopt"
                                                   "date" "2012-01-12"}]}
-        expected-meta {:ddl {:technologies
-                             ["name varchar(255) not null primary key"
-                              "links-main text"]
+        expected-meta {:ddl [{:create-table :technologies
+                              :columns ["name varchar(255) not null primary key"
+                                        "links-main text"]}
 
-                             :technologies-recommendations
-                             ["id int auto_increment primary key"
-                              "technology varchar(255) not null references technologies"
-                              "type text"
-                              "date text"]}}
+                             {:create-table :recommendations
+                              :columns ["id int auto_increment primary key"
+                                        "technology varchar(255) not null references technologies"
+                                        "type text"
+                                        "date text"]}]}
         res (es/recordset->tables recordset)]
   (is (= expected res))
   (is (= expected-meta (select-keys (meta res) [:ddl])))))
