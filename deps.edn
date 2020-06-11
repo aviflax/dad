@@ -60,9 +60,15 @@
                            "-r"]}
   
   :test       {:extra-paths ["test" "test/examples"]
-               :extra-deps  {kaocha {:git/url "https://github.com/lambdaisland/kaocha"
-                                     :sha "96518cf42d722d668d363942070a69f74d5242cd"
-                                     :tag "v1.0.632"}}}
+               :extra-deps  {kaocha      {:git/url "https://github.com/lambdaisland/kaocha"
+                                          :sha "96518cf42d722d668d363942070a69f74d5242cd"
+                                          :tag "v1.0.632"}
+                             test.check  {:git/url "https://github.com/clojure/test.check"
+                                          :sha "cdc0b1d5bc7ef450a25f6c605657d2a6f40a7dd4"
+                                          :tag "test.check-1.0.0"}
+                             expound     {:git/url "https://github.com/bhb/expound"
+                                          :sha "a305d63c6a0ccc68b33c6575388282463a7101a0"
+                                          :tag "v0.8.4"}}}
   
   :main       {:main-opts ["-m" "dad.cli"]
                :jvm-opts  ["-Dapple.awt.UIElement=true"

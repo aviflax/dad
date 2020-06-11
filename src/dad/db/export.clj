@@ -7,14 +7,16 @@
 
 (s/def ::non-blank-string (s/and string? (complement str/blank?)))
 (s/def ::non-empty-scalar (s/and (complement coll?) (complement empty?)))
+(s/def ::col-name (s/or :keyword keyword?
+                        :string  ::non-blank-string))
 
-(s/def ::record-key-cols (s/map-of keyword? ::non-empty-scalar))
-(s/def ::record-val-cols (s/map-of ::non-blank-string any?))
+(s/def ::record-key-cols (s/map-of keyword? ::non-empty-scalar :gen-max 10))
+(s/def ::record-val-cols (s/map-of ::col-name any? :gen-max 10))
 
-(s/def ::keyed-rows (s/map-of ::record-key-cols ::record-val-cols))
-(s/def ::unkeyed-rows (s/coll-of ::record-val-cols))
+(s/def ::keyed-rows (s/map-of ::record-key-cols ::record-val-cols :gen-max 10))
+(s/def ::unkeyed-rows (s/coll-of ::record-val-cols :gen-max 10))
 
-(s/def ::table (s/map-of keyword? (s/or ::keyed-rows ::unkeyed-rows)))
+(s/def ::tables (s/map-of keyword? (s/or ::keyed-rows ::unkeyed-rows) :gen-max 10))
 
 (defn- join-names
   [separator names]
@@ -115,5 +117,7 @@
       (assoc :systems (select-keys (:systems db) ["BILCAS"]))
       (flatten-db)
       (clojure.pprint/pprint))
-    
+  
+  (s/exercise ::table)
+  
   )
