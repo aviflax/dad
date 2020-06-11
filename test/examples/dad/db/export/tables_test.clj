@@ -115,17 +115,17 @@
     ; table-name
     :systems
     ; record
-    (map-entry "SACLIB" {"containers" {"API"        {"props" {"marathon-ids" {"kp" "/saclib/api"}}}
-                                       "Hutch"      {"props" {"marathon-ids" {"kp" "/saclib/hutch"}
-                                                              "technologies" ["RabbitMQ" "Ruby"]}}
-                                       "Sidekiq"    {"props" {"marathon-ids" {"kp" "/saclib/sidekiq"}
-                                                              "technologies" ["Ruby"]}}
-                                       "Web"        {"props" {"marathon-ids" {"kp" "/saclib/web"}}}}
+    (map-entry "SACLIB" {"containers" {"API"     {"marathon-ids" {"kp" "/saclib/api"}}
+                                       "Hutch"   {"marathon-ids" {"kp" "/saclib/hutch"}
+                                                  "technologies" ["RabbitMQ" "Ruby"]}
+                                       "Sidekiq" {"marathon-ids" {"kp" "/saclib/sidekiq"}
+                                                  "technologies" ["Ruby"]}
+                                       "Web"     {"marathon-ids" {"kp" "/saclib/web"}}}
                          "description" "Salad Container Library -- builds libraries of salad containers (duh)"
-                         "props"       {"regions"       ["kp"]
-                                        "marathon-ids"  {"kp" "/saclib"}
-                                        "repos"         ["saclib"]
-                                        "related-repos" ["saclib_adapter" "saclib-client"]}})
+                         "regions"       ["kp"]
+                         "marathon-ids"  {"kp" "/saclib"}
+                         "repos"         ["saclib"]
+                         "related-repos" ["saclib_adapter" "saclib-client"]})
     ; expected
     {:systems            {{:name "SACLIB"} {"description"   "Salad Container Library -- builds libraries of salad containers (duh)"
                                             "regions"       ["kp"]
