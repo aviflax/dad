@@ -8,11 +8,13 @@
 ;; Maybe should this be a library, something like flattt -> Flatten To Tables — ?
 
 (s/def ::non-blank-string (s/and string? (complement str/blank?)))
-(s/def ::non-empty-scalar (s/or :number number? :string ::non-blank-string))
-(s/def ::col-name         (s/or :keyword keyword?
+(s/def ::non-empty-scalar (s/or :number number?
+                                :keyword keyword?
                                 :string ::non-blank-string))
-(s/def ::col-val          ::non-empty-scalar)
-(s/def ::record-key-cols  (s/map-of keyword? ::col-val :gen-max 10))
+(s/def ::col-name         keyword?)
+(s/def ::col-val          (s/or :scalar      ::non-empty-scalar
+                                :scalar-coll (s/coll-of ::non-empty-scalar :gen-max 10)))
+(s/def ::record-key-cols  (s/map-of ::col-name ::col-val :gen-max 10))
 (s/def ::record-val-cols  (s/map-of ::col-name ::col-val :gen-max 10))
 (s/def ::keyed-rows       (s/map-of ::record-key-cols ::record-val-cols :gen-max 10))
 (s/def ::unkeyed-rows     (s/coll-of ::record-val-cols :gen-max 10))
@@ -32,10 +34,9 @@
   [m]
   (postwalk
     (fn [v]
-      (cond
-        (and (map? v) (contains? v "props"))  (merge (get v "props") (dissoc v "props"))
-        (and (map? v) (contains? v :props))   (merge (get v :props) (dissoc v "props"))
-        :else                                 v))
+      (if-let [props (and (map? v) (:props v))]
+        (merge props (dissoc v :props))
+        v))
     m))
 
 (defn- flatten-paths
@@ -49,7 +50,11 @@
                         (not (map? (val (first v)))))
                  (flatten-paths v separator (conj path k))
                  [(->> (conj path k)
-                       (join-names separator)) v]))
+                       (join-names separator))
+                  (if (and (map? v)
+                           (map? (val (first v))))
+                    (flatten-paths v separator)
+                    v)]))
              m)
         (into {}))))
 
@@ -102,7 +107,8 @@
   "Transforms the recordset into one or more tables. The recordset should be either a MapEntry or a
   two-tuple. Returns a map."
   [[rs-name rs-recs :as _recordset]]
-  (->> (map-vals fold-props rs-recs)
+  (->> (walk/keywordize-keys rs-recs)
+       (map-vals fold-props rs-recs)
        (map-vals #(flatten-paths % separator) rs-recs)
        (map #(split-record rs-name %))
        (reduce merge)))
