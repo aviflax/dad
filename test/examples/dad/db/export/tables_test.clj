@@ -48,9 +48,38 @@
                                           "cache" {"summary" "hot keys", "technology" "PHP"}}})
     ; expected
     {:systems            {{:name "Discourse"} {:links-main "https://discourse.org/"}}
-     :systems-containers {{:name "web", :system "Discourse"}   {"summary" "web server", "technology" "Tomcat"}
-                          {:name "db", :system "Discourse"}    {"summary" "db server", "technology" "Access"}
-                          {:name "cache", :system "Discourse"} {"summary" "hot keys", "technology" "PHP"}}})
+     :systems-containers {{:system "Discourse" :name "web"}   {"summary" "web server", "technology" "Tomcat"}
+                          {:system "Discourse" :name "db"}    {"summary" "db server", "technology" "Access"}
+                          {:system "Discourse" :name "cache"} {"summary" "hot keys", "technology" "PHP"}}}
+
+    ; --------------------
+    
+    ; table-name
+    :systems
+    ; record
+    (map-entry "SACLIB" {"containers" {"API"        {"props" {"marathon-ids" {"kp" "/saclib/api"}}}
+                                       "Hutch"      {"props" {"marathon-ids" {"kp" "/saclib/hutch"}
+                                                              "technologies" ["RabbitMQ" "Ruby"]}}
+                                       "Sidekiq"    {"props" {"marathon-ids" {"kp" "/saclib/sidekiq"}
+                                                              "technologies" ["Ruby"]}}
+                                       "Web"        {"props" {"marathon-ids" {"kp" "/saclib/web"}}}}
+                         "description" "Salad Container Library -- builds libraries of salad containers (duh)"
+                         "props"       {"regions"       ["kp"]
+                                        "marathon-ids"  {"kp" "/saclib"}
+                                        "repos"         ["saclib"]
+                                        "related-repos" ["saclib_adapter" "saclib-client"]}})
+    ; expected
+    {:systems            {{:name "SACLIB"} {"description"   "Salad Container Library -- builds libraries of salad containers (duh)"
+                                            "regions"       ["kp"]
+                                            "marathon-ids"  {"kp" "/saclib"}
+                                            "repos"         ["saclib"]
+                                            "related-repos" ["saclib_adapter" "saclib-client"]}}
+     :systems-containers {{:system "SACLIB" :name "API"}     {"marathon-ids-kp" "/saclib/api"}
+                          {:system "SACLIB" :name "Hutch"}   {"marathon-ids-kp" "/saclib/hutch"
+                                                              "technologies"    ["RabbitMQ" "Ruby"]}
+                          {:system "SACLIB" :name "Sidekiq"} {"marathon-ids-kp" "/saclib/sidekiq"
+                                                              "technologies"    ["Ruby"]}
+                          {:system "SACLIB" :name "Web"}     {"marathon-ids-kp" "/saclib/web"}}})
                           
   (let [table-name :technologies
         record (map-entry "Clojure" {:links-main "https://clojure.org/"

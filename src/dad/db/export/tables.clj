@@ -97,7 +97,7 @@
        (reduce merge)))
 
 (comment
-  ;(require '[dad.db :as db])
+  (require '[dad.db :as db] '[clojure.pprint :refer [pprint]])
   
   (def db-path "/Users/avi.flax/dev/docs/architecture/docs-as-data/db")
   (def db (db/read db-path))
@@ -126,12 +126,13 @@
       first
       meta)
       
-  (-> (select-keys db [:technologies])
-      (update :technologies #(select-keys % ["Clojure"]))
+  (-> (select-keys db [:systems])
       (assoc :systems (select-keys (:systems db) ["BILCAS"]))
+      (pprint))
+
+  (-> (map-vals #(into {} (take 2 %)) db)
       (flatten-db)
-      (clojure.pprint/pprint))
+      (pprint))
   
-  (s/exercise ::table)
-  
-  )
+  (s/exercise ::tables)
+)
