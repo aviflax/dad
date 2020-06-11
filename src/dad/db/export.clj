@@ -8,15 +8,19 @@
 ;; Maybe should this be a library, something like flattt -> Flatten To Tables — ?
 
 (s/def ::non-blank-string (s/and string? (complement str/blank?)))
-(s/def ::non-empty-scalar (s/and (complement coll?) (complement empty?)))
-(s/def ::col-name         (s/or :keyword keyword? :string ::non-blank-string))
+(s/def ::non-empty-scalar (s/or :number number? :string ::non-blank-string))
+(s/def ::col-name         (s/or :keyword keyword?
+                                :string ::non-blank-string))
 (s/def ::col-val          ::non-empty-scalar)
 (s/def ::record-key-cols  (s/map-of keyword? ::col-val :gen-max 10))
 (s/def ::record-val-cols  (s/map-of ::col-name ::col-val :gen-max 10))
 (s/def ::keyed-rows       (s/map-of ::record-key-cols ::record-val-cols :gen-max 10))
 (s/def ::unkeyed-rows     (s/coll-of ::record-val-cols :gen-max 10))
 (s/def ::table-name       keyword?)
-(s/def ::tables           (s/map-of ::table-name (s/or ::keyed-rows ::unkeyed-rows) :gen-max 10))
+(s/def ::tables           (s/map-of ::table-name
+                                    (s/or :keyed ::keyed-rows
+                                          :unkeyed ::unkeyed-rows)
+                                    :gen-max 10))
 
 (defn- join-names
   [separator names]
@@ -63,7 +67,6 @@
   [table-name [rec-key rec-m :as _record]]
   (reduce-kv
     (fn [r k v]
-;(prn r k v)
       (cond
         (and (coll? v) (map? v))
         (assoc r
@@ -77,7 +80,7 @@
               (map #(add-fk % table-name rec-key) v))
         
         :else
-        (assoc-in r [table-name :foo (->key-col rec-key) k] v)))
+        (assoc-in r [table-name (->key-col rec-key) k] v)))
     {}
     rec-m))
 
@@ -110,13 +113,12 @@
       recordset->tables)
 
 
-  (-> (mc/map-entry :technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
+  (->> (mc/map-entry :technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
                                               "recommendations" [{"type" "assess", "date" "2011-09-15"}
                                                                  {"type" "adopt", "date" "2012-01-12"}]}})
-      recordset->tables
-      :technologies
-      type)
-
+       recordset->tables)
+  
+  
   (-> (select-keys db [:technologies])
       (update :technologies #(select-keys % ["Clojure"]))
       (find :technologies)
