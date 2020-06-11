@@ -12,13 +12,13 @@
 (st/instrument `et/add-fk)
 
 (deftest add-fk
-  (let [rec-m {"type" "assess"
-               "date" "2011-09-15"}
+  (let [rec-m {:type "assess"
+               :date "2011-09-15"}
         fk-table-name :technologies
         fk-table-key-val "Clojure"
         expected {:technology "Clojure"
-                  "type" "assess"
-                  "date" "2011-09-15"}
+                  :type "assess"
+                  :date "2011-09-15"}
         expected-meta {::et/columns {:technology {::et/fk-table-name fk-table-name}}}
         res (#'et/add-fk rec-m fk-table-name fk-table-key-val)]
     (is (= expected res))
@@ -105,9 +105,9 @@
                                          :cache {:summary "hot keys"   :technology "PHP"}}})
     ; expected
     {:systems            {{:name "Discourse"} {:links-main "https://discourse.org/"}}
-     :systems-containers {{:system "Discourse" :name :web}   {:summary "web server" :technology "Tomcat"}
-                          {:system "Discourse" :name :db}    {:summary "db server"  :technology "Access"}
-                          {:system "Discourse" :name :cache} {:summary "hot keys"   :technology "PHP"}}}
+     :systems-containers {{:system "Discourse" :name "web"}   {:summary "web server" :technology "Tomcat"}
+                          {:system "Discourse" :name "db"}    {:summary "db server"  :technology "Access"}
+                          {:system "Discourse" :name "cache"} {:summary "hot keys"   :technology "PHP"}}}
 
     ; --------------------
     
@@ -131,12 +131,12 @@
                                             :marathon-ids-kp "/saclib"
                                             :repos           ["saclib"]
                                             :related-repos   ["saclib_adapter" "saclib-client"]}}
-     :systems-containers {{:system "SACLIB" :name :API}     {:marathon-ids-kp "/saclib/api"}
-                          {:system "SACLIB" :name :Hutch}   {:marathon-ids-kp "/saclib/hutch"
+     :systems-containers {{:system "SACLIB" :name "API"}     {:marathon-ids-kp "/saclib/api"}
+                          {:system "SACLIB" :name "Hutch"}   {:marathon-ids-kp "/saclib/hutch"
                                                              :technologies    ["RabbitMQ" "Ruby"]}
-                          {:system "SACLIB" :name :Sidekiq} {:marathon-ids-kp "/saclib/sidekiq"
+                          {:system "SACLIB" :name "Sidekiq"} {:marathon-ids-kp "/saclib/sidekiq"
                                                              :technologies    ["Ruby"]}
-                          {:system "SACLIB" :name :Web}     {:marathon-ids-kp "/saclib/web"}}})
+                          {:system "SACLIB" :name "Web"}     {:marathon-ids-kp "/saclib/web"}}})
 
   (let [table-name :technologies
         record (map-entry "Clojure" {:links-main "https://clojure.org/"

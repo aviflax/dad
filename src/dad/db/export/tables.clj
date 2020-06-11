@@ -62,7 +62,7 @@
   [k]
   (cond
     (map? k) k
-    (or (string? k) (keyword? k)) {:name k}))
+    (or (string? k) (keyword? k)) {:name (name k)}))
 
 (s/fdef add-fk
   :args (s/cat :val-cols         ::record-val-cols
@@ -125,14 +125,12 @@
   (def db (db/read db-path))
 
   ; (-> db :technologies (select-keys ["Clojure"]))
-  
   ; (defn rand-val [m] (-> m seq rand-nth val))
   
   (-> (select-keys db [:technologies])
       (update :technologies #(select-keys % ["Clojure"]))
       (find :technologies)
       recordset->tables)
-
 
   (->> (mc/map-entry :technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
                                               "recommendations" [{"type" "assess", "date" "2011-09-15"}
