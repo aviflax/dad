@@ -1,6 +1,7 @@
 (ns dad.db.export.tables
   (:require [clojure.string :as str]
             [clojure.spec.alpha :as s]
+            [clojure.walk :as walk :refer [postwalk]]
             [inflections.core :refer [singular]]
             [medley.core :as mc :refer [map-keys map-vals]]))
 
@@ -26,6 +27,16 @@
   (->> (map name names)
        (str/join separator)
        (keyword)))
+
+(defn- fold-props
+  [m]
+  (postwalk
+    (fn [v]
+      (cond
+        (and (map? v) (contains? v "props"))  (merge (get v "props") (dissoc v "props"))
+        (and (map? v) (contains? v :props))   (merge (get v :props) (dissoc v "props"))
+        :else                                 v))
+    m))
 
 (defn- flatten-paths
   {:derived-from "https://andersmurphy.com/2019/11/30/clojure-flattening-key-paths.html"}
@@ -87,7 +98,8 @@
   "Transforms the recordset into one or more tables. The recordset should be either a MapEntry or a
   two-tuple. Returns a map."
   [[rs-name rs-recs :as _recordset]]
-  (->> (map-vals #(flatten-paths % separator) rs-recs)
+  (->> (map-vals fold-props rs-recs)
+       (map-vals #(flatten-paths % separator) rs-recs)
        (map #(split-record rs-name %))
        (reduce merge)))
 

@@ -24,6 +24,64 @@
     (is (= expected res))
     (is (= expected-meta (meta res)))))
 
+(deftest fold-props
+  (are [in expected] (= expected (#'et/fold-props in))
+  
+    ; in
+    {"containers" {"API"     {"props" {"marathon-ids" {"kp" "/saclib/api"}}}
+                   "Hutch"   {"props" {"marathon-ids" {"kp" "/saclib/hutch"}
+                                       "technologies" ["RabbitMQ" "Ruby"]}}
+                   "Sidekiq" {"props" {"marathon-ids" {"kp" "/saclib/sidekiq"}
+                                       "technologies" ["Ruby"]}}
+                   "Web"     {"props" {"marathon-ids" {"kp" "/saclib/web"}}}}
+     "description" "Salad Container Library -- builds libraries of salad containers (duh)"
+     "props"       {"regions"       ["kp"]
+                    "marathon-ids"  {"kp" "/saclib"}
+                    "repos"         ["saclib"]
+                    "related-repos" ["saclib_adapter" "saclib-client"]}}
+    ; expected
+    {"containers" {"API"     {"marathon-ids" {"kp" "/saclib/api"}}
+                   "Hutch"   {"marathon-ids" {"kp" "/saclib/hutch"}
+                              "technologies" ["RabbitMQ" "Ruby"]}
+                   "Sidekiq" {"marathon-ids" {"kp" "/saclib/sidekiq"}
+                              "technologies" ["Ruby"]}
+                   "Web"     {"marathon-ids" {"kp" "/saclib/web"}}}
+     "description" "Salad Container Library -- builds libraries of salad containers (duh)"
+     "regions"       ["kp"]
+     "marathon-ids"  {"kp" "/saclib"}
+     "repos"         ["saclib"]
+     "related-repos" ["saclib_adapter" "saclib-client"]}))
+
+(deftest flatten-paths
+  (are [in expected] (= expected (#'et/flatten-paths in "-"))
+  
+    ; in
+    {"containers" {"API"     {"props" {"marathon-ids" {"kp" "/saclib/api"}}}
+                   "Hutch"   {"props" {"marathon-ids" {"kp" "/saclib/hutch"}
+                              "technologies" ["RabbitMQ" "Ruby"]}}
+                   "Sidekiq" {"props" {"marathon-ids" {"kp" "/saclib/sidekiq"}
+                              "technologies" ["Ruby"]}}
+                   "Web"     {"props" {"marathon-ids" {"kp" "/saclib/web"}}}}
+     "description" "Salad Container Library -- builds libraries of salad containers (duh)"
+     "props"       {"regions"       ["kp"]
+                    "marathon-ids"  {"kp" "/saclib"}
+                    "repos"         ["saclib"]
+                    "related-repos" ["saclib_adapter" "saclib-client"]}}
+    ; expected
+    {"containers" {"API"     {"props" {"marathon-ids" {"kp" "/saclib/api"}}}
+                   "Hutch"   {"props" {"marathon-ids" {"kp" "/saclib/hutch"}
+                              "technologies" ["RabbitMQ" "Ruby"]}}
+                   "Sidekiq" {"props" {"marathon-ids" {"kp" "/saclib/sidekiq"}
+                              "technologies" ["Ruby"]}}
+                   "Web"     {"props" {"marathon-ids" {"kp" "/saclib/web"}}}}
+     "description" "Salad Container Library -- builds libraries of salad containers (duh)"
+     "props"       {"regions"       ["kp"]
+                    "marathon-ids"  {"kp" "/saclib"}
+                    "repos"         ["saclib"]
+                    "related-repos" ["saclib_adapter" "saclib-client"]}}
+  
+  ))
+
 (deftest split-record
   (are [table-name record expected] (= expected (#'et/split-record table-name record))
     ; table-name
@@ -90,9 +148,11 @@
 
 (deftest recordset->tables
   (let [recordset (map-entry :technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
+                                                       "props" {"hosted" "true"}
                                                        "recommendations" [{"type" "assess", "date" "2011-09-15"}
                                                                           {"type" "adopt", "date" "2012-01-12"}]}})
-        expected {:technologies {{:name "Clojure"} {:links-main "https://clojure.org/"}}
+        expected {:technologies {{:name "Clojure"} {:links-main "https://clojure.org/"
+                                                    "hosted" "true"}}
                   :technologies-recommendations [{:technology "Clojure", "type" "assess", "date" "2011-09-15"}
                                                  {:technology "Clojure", "type" "adopt", "date" "2012-01-12"}]}
         res (#'et/recordset->tables recordset)]
