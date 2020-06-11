@@ -1,6 +1,6 @@
 (ns dad.db.export.sqlite-test
   (:require [clojure.test :refer [deftest is are testing]]
-            [dad.db.export :as e]
+            [dad.db.export.tables :as et]
             [dad.db.export.sqlite :as es]))
 
 (deftest table->ddl
@@ -16,9 +16,9 @@
 
     :technologies-recommendations
     [(with-meta {:technology "Clojure", "type" "assess", "date" "2011-09-15"}
-                {::e/columns {:technology {::e/fk-table-name :technologies}}})
+                {::et/columns {:technology {::et/fk-table-name :technologies}}})
      (with-meta {:technology "Clojure", "type" "adopt", "date" "2012-01-12"}
-                {::e/columns {:technology {::e/fk-table-name :technologies}}})]
+                {::et/columns {:technology {::et/fk-table-name :technologies}}})]
     {:create-table :technologies-recommendations
      :columns ["technology varchar(255) not null references technologies"
                "type text"

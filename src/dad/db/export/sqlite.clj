@@ -1,7 +1,7 @@
 (ns dad.db.export.sqlite
   (:require ;[clojure.spec.alpha :as s]
             ;[cognitect.anomalies :as anom]
-            [dad.db.export :as e]
+            [dad.db.export.tables :as et]
             ;[medley.core :as mc :refer [map-vals]]
             [next.jdbc :as j]
             [next.jdbc.sql :as sql]))
@@ -15,7 +15,7 @@
   nil)
 
 (defn table->ddl
-  "Accepts a ::dad.db.export/table, returns a ::dad.db.export/ddl-statement"
+  "Accepts a ::dad.db.export.tables/tables, returns a ::dad.db.export.sql/ddl-statement"
   [table-name rows]
   nil)
 

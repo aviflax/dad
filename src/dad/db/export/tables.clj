@@ -1,7 +1,6 @@
-(ns dad.db.export
+(ns dad.db.export.tables
   (:require [clojure.string :as str]
             [clojure.spec.alpha :as s]
-            [dad.db.export :as e]
             [inflections.core :refer [singular]]
             [medley.core :as mc :refer [map-keys map-vals]]))
 
@@ -88,7 +87,7 @@
   "Transforms the recordset into one or more tables. The recordset should be either a MapEntry or a
   two-tuple. Returns a map."
   [[rs-name rs-recs :as _recordset]]
-  (->> (map-vals #(e/flatten-paths % separator) rs-recs)
+  (->> (map-vals #(flatten-paths % separator) rs-recs)
        (map #(split-record rs-name %))
        (reduce merge)))
 
