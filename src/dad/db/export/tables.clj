@@ -25,7 +25,8 @@
 (defn- join-names
   [separator names]
   (->> (map name names)
-       (str/join separator)))
+       (str/join separator)
+       (keyword)))
 
 (defn- fold-props
   [m]
