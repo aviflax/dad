@@ -69,7 +69,7 @@
               (map #(add-fk % table-name rec-key) v))
         
         :else
-        (assoc-in r [table-name rec-key k] v)))
+        (assoc-in r [table-name (->key-cols rec-key) k] v)))
     {}
     rec-m))
 
