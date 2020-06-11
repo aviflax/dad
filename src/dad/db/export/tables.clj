@@ -30,6 +30,16 @@
        (str/join separator)
        (keyword)))
 
+(s/fdef fold-props
+  :args (s/cat :map map?)
+  :ret  map?
+  :fn   (fn [{{in :map} :args
+              out       :ret}]
+          (let [map-seq (fn map-seq [m] (tree-seq map? #(interleave (keys %) (vals %)) m))]
+            (if (some :props (map-seq in))
+              (not-any? :props (map-seq out))
+              (= out in)))))
+
 (defn- fold-props
   [m]
   (postwalk
@@ -108,8 +118,8 @@
   two-tuple. Returns a map."
   [[rs-name rs-recs :as _recordset]]
   (->> (walk/keywordize-keys rs-recs)
-       (map-vals fold-props rs-recs)
-       (map-vals #(flatten-paths % separator) rs-recs)
+       (map-vals fold-props)
+       (map-vals #(flatten-paths % separator))
        (map #(split-record rs-name %))
        (reduce merge)))
 

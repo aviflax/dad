@@ -9,7 +9,7 @@
 ; See https://github.com/bhb/expound#printer-options
 (set! s/*explain-out* (expound/custom-printer {:print-specs? false :theme :figwheel-theme}))
 
-(st/instrument `et/add-fk)
+(st/instrument `et/add-fk `et/fold-props)
 
 (deftest add-fk
   (let [rec-m {:type "assess"
@@ -151,18 +151,11 @@
                                                        "recommendations" [{"type" "assess", "date" "2011-09-15"}
                                                                           {"type" "adopt", "date" "2012-01-12"}]}})
         expected {:technologies {{:name "Clojure"} {:links-main "https://clojure.org/"
-                                                    "hosted" "true"}}
-                  :technologies-recommendations [{:technology "Clojure", "type" "assess", "date" "2011-09-15"}
-                                                 {:technology "Clojure", "type" "adopt", "date" "2012-01-12"}]}
+                                                    :hosted     "true"}}
+                  :technologies-recommendations [{:technology "Clojure" :type "assess" :date "2011-09-15"}
+                                                 {:technology "Clojure" :type "adopt"  :date "2012-01-12"}]}
         res (#'et/recordset->tables recordset)]
   (is (= expected res))
   (is (s/valid? ::et/tables res) (s/explain-str ::et/tables res))
   (is (= {::et/columns {:technology {::et/fk-table-name :technologies}}}
          (meta (first (:technologies-recommendations res)))))))
-
-(comment
-  
-  
-  ((var et/split-record) :systems (map-entry "SACLIB" {:containers {:API {:marathon-ids-kp "/saclib/api"}, :Hutch {:marathon-ids-kp "/saclib/hutch", :technologies ["RabbitMQ" "Ruby"]}, :Sidekiq {:marathon-ids-kp "/saclib/sidekiq", :technologies ["Ruby"]}, :Web {:marathon-ids-kp "/saclib/web"}}, :description "Salad Container Library -- builds libraries of salad containers (duh)", :regions ["kp"], :marathon-ids-kp "/saclib", :repos ["saclib"], :related-repos ["saclib_adapter" "saclib-client"]}))
-  
-  )
