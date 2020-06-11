@@ -3,7 +3,18 @@
             [clojure.spec.alpha :as s]
             [dad.db.export :as e]
             [inflections.core :refer [singular]]
-            [medley.core :as mc :refer [map-vals]]))
+            [medley.core :as mc :refer [map-keys map-vals]]))
+
+(s/def ::non-blank-string (s/and string? (complement str/blank?)))
+(s/def ::non-empty-scalar (s/and (complement coll?) (complement empty?)))
+
+(s/def ::record-key-cols (s/map-of keyword? ::non-empty-scalar))
+(s/def ::record-val-cols (s/map-of ::non-blank-string any?))
+
+(s/def ::keyed-rows (s/map-of ::record-key-cols ::record-val-cols))
+(s/def ::unkeyed-rows (s/coll-of ::record-val-cols))
+
+(s/def ::table (s/map-of keyword? (s/or ::keyed-rows ::unkeyed-rows)))
 
 (defn- join-names
   [separator names]
@@ -24,6 +35,13 @@
              m)
         (into {}))))
 
+(defn- ->key-cols
+  [k]
+  (cond
+    (map? k) k
+    (or (string? k) (keyword? k)) {:name k}
+    :else :WTF))
+
 (defn- add-fk
   [rec-m fk-table-name fk-table-key-val]
   (let [col-name (singular fk-table-name)]
@@ -33,21 +51,30 @@
 (def separator "-")
 
 (defn- split-record
-  "Accepts a table name and a map representing a single record, as a MapEntry.
-   Returns a map of table name to maps representing records."
+  "Accepts a table name and a single record as either a MapEntry or a two-tuple.
+  Returns a map of table name to maps representing records."
   [table-name [rec-key rec-m :as _record]]
   (reduce-kv
     (fn [r k v]
-      (if (and (coll? v)
-               (or (map? v)
-                   (map? (first v))))
-        (assoc r (join-names separator [table-name k]) (map #(add-fk % table-name rec-key) v))
+      (cond
+        (and (coll? v) (map? v))
+        (assoc r
+              (join-names separator [table-name k])
+              (map-keys #(-> (->key-cols %)
+                             (add-fk table-name rec-key)) v))
+        
+        (and (coll? v) (not (map? v)) (map? (first v)))
+        (assoc r
+              (join-names separator [table-name k])
+              (map #(add-fk % table-name rec-key) v))
+        
+        :else
         (assoc-in r [table-name rec-key k] v)))
     {}
     rec-m))
 
 (defn recordset->tables
-  "Transforms the recordset into one or more tables. The recordset should either a MapEntry or a
+  "Transforms the recordset into one or more tables. The recordset should be either a MapEntry or a
   two-tuple. Returns a map."
   [[rs-name rs-recs :as _recordset]]
   (->> (map-vals #(e/flatten-paths % separator) rs-recs)
@@ -86,6 +113,7 @@
   (-> (select-keys db [:technologies])
       (update :technologies #(select-keys % ["Clojure"]))
       (assoc :systems (select-keys (:systems db) ["BILCAS"]))
-      (flatten-db))
+      (flatten-db)
+      (clojure.pprint/pprint))
     
   )

@@ -16,6 +16,28 @@
     (is (= expected res))
     (is (= expected-meta (meta res)))))
 
+(deftest split-record
+  (are [table-name record expected] (= expected (#'e/split-record table-name record))
+    :technologies
+    (map-entry "Clojure" {"links-main" "https://clojure.org/"
+                          "recommendations" [{"type" "assess", "date" "2011-09-15"}
+                                             {"type" "adopt", "date" "2012-01-12"}]})
+    {:technologies                 {{:name "Clojure"} {"links-main" "https://clojure.org/"}}
+     :technologies-recommendations [{:technology "Clojure", "type" "assess", "date" "2011-09-15"}
+                                    {:technology "Clojure", "type" "adopt", "date" "2012-01-12"}]}
+                                    
+    :systems
+    (map-entry "Discourse" {"links-main" "https://discourse.org/"
+                            "containers" {"web"   {"summary" "web server", "technology" "Tomcat"}
+                                          "db"    {"summary" "db server", "technology" "Access"}
+                                          "cache" {"summary" "hot keys", "technology" "PHP"}}})
+    {:systems            {{:name "Discourse"} {"links-main" "https://discourse.org/"}}
+     :systems-containers {{:name "web", :system "Discourse"}   {"summary" "web server", "technology" "Tomcat"}
+                          {:name "db", :system "Discourse"}    {"summary" "db server", "technology" "Access"}
+                          {:name "cache", :system "Discourse"} {"summary" "hot keys", "technology" "PHP"}}}))
+
+((var e/split-record) :systems (map-entry "Discourse" {"links-main" "https://discourse.org/", "containers" {"web" {"summary" "web server", "technology" "Tomcat"}, "db" {"summary" "db server", "technology" "Access"}, "cache" {"summary" "hot keys", "technology" "PHP"}}}))
+
 (deftest recordset->tables
   (let [recordset (map-entry :technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
                                                        "recommendations" [{"type" "assess"
