@@ -36,21 +36,13 @@
                           {:name "db", :system "Discourse"}    {"summary" "db server", "technology" "Access"}
                           {:name "cache", :system "Discourse"} {"summary" "hot keys", "technology" "PHP"}}}))
 
-((var e/split-record) :systems (map-entry "Discourse" {"links-main" "https://discourse.org/", "containers" {"web" {"summary" "web server", "technology" "Tomcat"}, "db" {"summary" "db server", "technology" "Access"}, "cache" {"summary" "hot keys", "technology" "PHP"}}}))
-
 (deftest recordset->tables
   (let [recordset (map-entry :technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
-                                                       "recommendations" [{"type" "assess"
-                                                                           "date" "2011-09-15"}
-                                                                          {"type" "adopt"
-                                                                           "date" "2012-01-12"}]}})
-        expected {:technologies {"Clojure" {:links-main "https://clojure.org/"}}
-                  :technologies-recommendations [{:technology "Clojure"
-                                                  "type" "assess"
-                                                  "date" "2011-09-15"}
-                                                 {:technology "Clojure"
-                                                  "type" "adopt"
-                                                  "date" "2012-01-12"}]}
+                                                       "recommendations" [{"type" "assess", "date" "2011-09-15"}
+                                                                          {"type" "adopt", "date" "2012-01-12"}]}})
+        expected {:technologies {{:name "Clojure"} {"links-main" "https://clojure.org/"}}
+                  :technologies-recommendations [{:technology "Clojure", "type" "assess", "date" "2011-09-15"}
+                                                 {:technology "Clojure", "type" "adopt", "date" "2012-01-12"}]}
         res (#'e/recordset->tables recordset)]
   (is (= expected res))
   (is (= {::e/columns {:technology {::e/fk-table-name :technologies}}}
