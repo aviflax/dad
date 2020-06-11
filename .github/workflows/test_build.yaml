@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-10.15, ubuntu-18.04]
-        java: [11, 13, 14]
+        java: [8, 11]
         suite: [examples] # We don’t have any other suites yet but we hope to, soon!
     runs-on: ${{ matrix.os }}
     steps:
