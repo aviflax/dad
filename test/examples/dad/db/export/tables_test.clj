@@ -56,31 +56,30 @@
   (are [in expected] (= expected (#'et/flatten-paths in "-"))
   
     ; in
-    {"containers" {"API"     {"props" {"marathon-ids" {"kp" "/saclib/api"}}}
-                   "Hutch"   {"props" {"marathon-ids" {"kp" "/saclib/hutch"}
-                              "technologies" ["RabbitMQ" "Ruby"]}}
-                   "Sidekiq" {"props" {"marathon-ids" {"kp" "/saclib/sidekiq"}
-                              "technologies" ["Ruby"]}}
-                   "Web"     {"props" {"marathon-ids" {"kp" "/saclib/web"}}}}
-     "description" "Salad Container Library -- builds libraries of salad containers (duh)"
-     "props"       {"regions"       ["kp"]
-                    "marathon-ids"  {"kp" "/saclib"}
-                    "repos"         ["saclib"]
-                    "related-repos" ["saclib_adapter" "saclib-client"]}}
+    {"containers"   {"API"     {"marathon-ids" {"kp" "/saclib/api"}}
+                     "Hutch"   {"marathon-ids" {"kp" "/saclib/hutch"}
+                                "technologies" ["RabbitMQ" "Ruby"]}
+                     "Sidekiq" {"marathon-ids" {"kp" "/saclib/sidekiq"}
+                                "technologies" ["Ruby"]}
+                     "Web"     {"marathon-ids" {"kp" "/saclib/web"}}}
+     "description"   "Salad Container Library -- builds libraries of salad containers (duh)"
+     "regions"       ["kp"]
+     "marathon-ids"  {"kp" "/saclib"}
+     "repos"         ["saclib"]
+     "related-repos" ["saclib_adapter" "saclib-client"]}
+
     ; expected
-    {"containers" {"API"     {"props" {"marathon-ids" {"kp" "/saclib/api"}}}
-                   "Hutch"   {"props" {"marathon-ids" {"kp" "/saclib/hutch"}
-                              "technologies" ["RabbitMQ" "Ruby"]}}
-                   "Sidekiq" {"props" {"marathon-ids" {"kp" "/saclib/sidekiq"}
-                              "technologies" ["Ruby"]}}
-                   "Web"     {"props" {"marathon-ids" {"kp" "/saclib/web"}}}}
+    {"containers" {"API"     {"marathon-ids" {"kp" "/saclib/api"}}
+                   "Hutch"   {"marathon-ids" {"kp" "/saclib/hutch"}
+                              "technologies" ["RabbitMQ" "Ruby"]}
+                   "Sidekiq" {"marathon-ids" {"kp" "/saclib/sidekiq"}
+                              "technologies" ["Ruby"]}
+                   "Web"     {"marathon-ids" {"kp" "/saclib/web"}}}
      "description" "Salad Container Library -- builds libraries of salad containers (duh)"
-     "props"       {"regions"       ["kp"]
-                    "marathon-ids"  {"kp" "/saclib"}
-                    "repos"         ["saclib"]
-                    "related-repos" ["saclib_adapter" "saclib-client"]}}
-  
-  ))
+     "regions"         ["kp"]
+     "marathon-ids-kp" "/saclib"
+     "repos"           ["saclib"]
+     "related-repos"   ["saclib_adapter" "saclib-client"]}))
 
 (deftest split-record
   (are [table-name record expected] (= expected (#'et/split-record table-name record))

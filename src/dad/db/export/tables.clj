@@ -25,8 +25,7 @@
 (defn- join-names
   [separator names]
   (->> (map name names)
-       (str/join separator)
-       (keyword)))
+       (str/join separator)))
 
 (defn- fold-props
   [m]
@@ -44,7 +43,9 @@
    (flatten-paths m separator []))
   ([m separator path]
    (->> (map (fn [[k v]]
-               (if (and (map? v) (not-empty v))
+               (if (and (map? v)
+                        (not-empty v)
+                        (not (map? (val (first v)))))
                  (flatten-paths v separator (conj path k))
                  [(->> (conj path k)
                        (join-names separator)) v]))
@@ -84,7 +85,9 @@
               (map-keys #(-> (->key-col %)
                              (add-fk table-name rec-key)) v))
         
-        (and (coll? v) (not (map? v)) (map? (first v)))
+        (and (coll? v)
+             (not (map? v))
+             (map? (first v)))
         (assoc r
               (join-names separator [table-name k])
               (map #(add-fk % table-name rec-key) v))
