@@ -5,18 +5,18 @@
             [inflections.core :refer [singular]]
             [medley.core :as mc :refer [map-keys map-vals]]))
 
+;; Maybe should this be a library, something like flattt -> Flatten To Tables — ?
+
 (s/def ::non-blank-string (s/and string? (complement str/blank?)))
 (s/def ::non-empty-scalar (s/and (complement coll?) (complement empty?)))
-(s/def ::col-name (s/or :keyword keyword?
-                        :string  ::non-blank-string))
-
-(s/def ::record-key-cols (s/map-of keyword? ::non-empty-scalar :gen-max 10))
-(s/def ::record-val-cols (s/map-of ::col-name any? :gen-max 10))
-
-(s/def ::keyed-rows (s/map-of ::record-key-cols ::record-val-cols :gen-max 10))
-(s/def ::unkeyed-rows (s/coll-of ::record-val-cols :gen-max 10))
-
-(s/def ::tables (s/map-of keyword? (s/or ::keyed-rows ::unkeyed-rows) :gen-max 10))
+(s/def ::col-name         (s/or :keyword keyword? :string ::non-blank-string))
+(s/def ::col-val          ::non-empty-scalar)
+(s/def ::record-key-cols  (s/map-of keyword? ::col-val :gen-max 10))
+(s/def ::record-val-cols  (s/map-of ::col-name ::col-val :gen-max 10))
+(s/def ::keyed-rows       (s/map-of ::record-key-cols ::record-val-cols :gen-max 10))
+(s/def ::unkeyed-rows     (s/coll-of ::record-val-cols :gen-max 10))
+(s/def ::table-name       keyword?)
+(s/def ::tables           (s/map-of ::table-name (s/or ::keyed-rows ::unkeyed-rows) :gen-max 10))
 
 (defn- join-names
   [separator names]
@@ -37,12 +37,17 @@
              m)
         (into {}))))
 
-(defn- ->key-cols
+(defn- ->key-col
   [k]
   (cond
     (map? k) k
-    (or (string? k) (keyword? k)) {:name k}
-    :else :WTF))
+    (or (string? k) (keyword? k)) {:name k}))
+
+(s/fdef add-fk
+  :args (s/cat :val-cols         ::record-val-cols
+               :fk-table-name    ::table-name
+               :fk-table-key-val ::col-val)
+  :ret  ::record-val-cols)
 
 (defn- add-fk
   [rec-m fk-table-name fk-table-key-val]
@@ -58,11 +63,12 @@
   [table-name [rec-key rec-m :as _record]]
   (reduce-kv
     (fn [r k v]
+;(prn r k v)
       (cond
         (and (coll? v) (map? v))
         (assoc r
               (join-names separator [table-name k])
-              (map-keys #(-> (->key-cols %)
+              (map-keys #(-> (->key-col %)
                              (add-fk table-name rec-key)) v))
         
         (and (coll? v) (not (map? v)) (map? (first v)))
@@ -71,7 +77,7 @@
               (map #(add-fk % table-name rec-key) v))
         
         :else
-        (assoc-in r [table-name (->key-cols rec-key) k] v)))
+        (assoc-in r [table-name :foo (->key-col rec-key) k] v)))
     {}
     rec-m))
 
@@ -92,7 +98,6 @@
   ;(require '[dad.db :as db])
   
   (def db-path "/Users/avi.flax/dev/docs/architecture/docs-as-data/db")
-  
   (def db (db/read db-path))
 
   ; (-> db :technologies (select-keys ["Clojure"]))
@@ -103,6 +108,14 @@
       (update :technologies #(select-keys % ["Clojure"]))
       (find :technologies)
       recordset->tables)
+
+
+  (-> (mc/map-entry :technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
+                                              "recommendations" [{"type" "assess", "date" "2011-09-15"}
+                                                                 {"type" "adopt", "date" "2012-01-12"}]}})
+      recordset->tables
+      :technologies
+      type)
 
   (-> (select-keys db [:technologies])
       (update :technologies #(select-keys % ["Clojure"]))
