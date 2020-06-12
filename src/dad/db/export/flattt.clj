@@ -1,13 +1,13 @@
-(ns dad.db.export.tables
+(ns dad.db.export.flattt
+  "flattt = “Flatten To Tables” — I’m thinking of extracting this as a standalone library/tool.
+  
+  Prior art: https://github.com/OpenDataServices/flatten-tool"
   (:require [clojure.string :as str]
             [clojure.spec.alpha :as s]
             [clojure.walk :as walk :refer [postwalk]]
             [dad.medley :as dm]
             [inflections.core :refer [singular]]
             [medley.core :as mc :refer [map-keys map-vals]]))
-
-;; Maybe should this be a library, something like flattt -> Flatten To Tables — ?
-;; Prior art: https://github.com/OpenDataServices/flatten-tool
 
 (s/def ::non-blank-string (s/and string? (complement str/blank?)))
 (s/def ::non-empty-scalar (s/or :number number?

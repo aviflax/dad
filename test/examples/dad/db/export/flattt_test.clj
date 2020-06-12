@@ -1,7 +1,7 @@
-(ns dad.db.export.tables-test
+(ns dad.db.export.flattt-test
   (:require [clojure.spec.alpha :as s]
             [clojure.test :refer [deftest is are]]
-            [dad.db.export.tables :as et]
+            [dad.db.export.flattt :as f]
             [expound.alpha :as expound]
             [medley.core :as mc :refer [map-entry]]))
 
@@ -9,7 +9,7 @@
 ; (set! s/*explain-out* (expound/custom-printer {:print-specs? false :theme :figwheel-theme}))
 
 ; TODO: not currently working
-; (st/instrument `et/add-fk `et/fold-props)
+; (st/instrument `f/add-fk `f/fold-props)
 
 (deftest add-fk
   (let [rec-m {:type "assess"
@@ -19,13 +19,13 @@
         expected {:technology "Clojure"
                   :type "assess"
                   :date "2011-09-15"}
-        expected-meta {::et/columns {:technology {::et/fk-table-name fk-table-name}}}
-        res (#'et/add-fk rec-m fk-table-name fk-table-key-val)]
+        expected-meta {::f/columns {:technology {::f/fk-table-name fk-table-name}}}
+        res (#'f/add-fk rec-m fk-table-name fk-table-key-val)]
     (is (= expected res))
     (is (= expected-meta (meta res)))))
 
 (deftest fold-props
-  (are [in expected] (= expected (#'et/fold-props in))
+  (are [in expected] (= expected (#'f/fold-props in))
   
     ; in
     {:containers  {:API     {:props {:marathon-ids {:kp "/saclib/api"}}}
@@ -53,7 +53,7 @@
      :related-repos ["saclib_adapter" "saclib-client"]}))
 
 (deftest flatten-paths
-  (are [in expected] (= expected (#'et/flatten-paths in "-"))
+  (are [in expected] (= expected (#'f/flatten-paths in "-"))
   
     ; in
     {:containers    {:API     {:marathon-ids {:kp "/saclib/api"}}
@@ -82,7 +82,7 @@
      :related-repos   ["saclib_adapter" "saclib-client"]}))
 
 (deftest split-record
-  (are [table-name record expected] (= expected (#'et/split-record table-name record))
+  (are [table-name record expected] (= expected (#'f/split-record table-name record))
     ; table-name
     :technologies
     ; record
@@ -142,8 +142,8 @@
         record (map-entry "Clojure" {:links-main "https://clojure.org/"
                                      :recommendations [{:type "assess" :date "2011-09-15"}
                                                        {:type "adopt"  :date "2012-01-12"}]})
-        res (#'et/split-record table-name record)]
-    (is (s/valid? ::et/tables res) (s/explain-str ::et/tables res))))
+        res (#'f/split-record table-name record)]
+    (is (s/valid? ::f/tables res) (s/explain-str ::f/tables res))))
 
 (deftest recordset->tables
   (let [recordset (map-entry :technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
@@ -160,8 +160,8 @@
                                                  {:technology "Clojure" :type "adopt"  :date "2012-01-12"}
                                                  {:technology "Kafka" :type "assess" :date "2013-12-16"}
                                                  {:technology "Kafka" :type "adopt"  :date "2016-03-03"}]}
-        res (#'et/recordset->tables recordset)]
+        res (#'f/recordset->tables recordset)]
   (is (= expected res))
-  (is (s/valid? ::et/tables res) (s/explain-str ::et/tables res))
-  (is (= {::et/columns {:technology {::et/fk-table-name :technologies}}}
+  (is (s/valid? ::f/tables res) (s/explain-str ::f/tables res))
+  (is (= {::f/columns {:technology {::f/fk-table-name :technologies}}}
          (meta (first (:technologies-recommendations res)))))))
