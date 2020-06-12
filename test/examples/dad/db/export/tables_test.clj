@@ -150,12 +150,16 @@
                                                        "props" {"hosted" "true"}
                                                        "recommendations" [{"type" "assess", "date" "2011-09-15"}
                                                                           {"type" "adopt", "date" "2012-01-12"}]}
-                                            "Kafka"   {"links" {"main" "https://kafka.apache.org/"}}})
+                                            "Kafka"   {"links" {"main" "https://kafka.apache.org/"}
+                                                       "recommendations" [{"type" "assess", "date" "2013-12-16"}
+                                                                          {"type" "adopt", "date" "2016-03-03"}]}})
         expected {:technologies {{:name "Clojure"} {:links-main "https://clojure.org/"
                                                     :hosted     "true"}
                                  {:name "Kafka"}   {:links-main "https://kafka.apache.org/"}}
                   :technologies-recommendations [{:technology "Clojure" :type "assess" :date "2011-09-15"}
-                                                 {:technology "Clojure" :type "adopt"  :date "2012-01-12"}]}
+                                                 {:technology "Clojure" :type "adopt"  :date "2012-01-12"}
+                                                 {:technology "Kafka" :type "assess" :date "2013-12-16"}
+                                                 {:technology "Kafka" :type "adopt"  :date "2016-03-03"}]}
         res (#'et/recordset->tables recordset)]
   (is (= expected res))
   (is (s/valid? ::et/tables res) (s/explain-str ::et/tables res))

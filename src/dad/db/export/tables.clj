@@ -2,6 +2,7 @@
   (:require [clojure.string :as str]
             [clojure.spec.alpha :as s]
             [clojure.walk :as walk :refer [postwalk]]
+            [dad.medley :as dm]
             [inflections.core :refer [singular]]
             [medley.core :as mc :refer [map-keys map-vals]]))
 
@@ -132,7 +133,18 @@
        (map-vals fold-props)
        (map-vals #(flatten-paths % separator))
        (map #(split-record rs-name %))
-       (reduce mc/deep-merge)))
+       (reduce dm/deep-merge)))
+
+(recordset->tables
+  (mc/map-entry :technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
+                                                       "props" {"hosted" "true"}
+                                                       "recommendations" [{"type" "assess", "date" "2011-09-15"}
+                                                                          {"type" "adopt", "date" "2012-01-12"}]}
+                                            "Kafka"   {"links" {"main" "https://kafka.apache.org/"}
+                                                       "recommendations" [{"type" "assess", "date" "2013-12-16"}
+                                                                          {"type" "adopt", "date" "2016-03-03"}]}}))
+
+
 
 (defn flatten-db
   [db]
@@ -166,7 +178,7 @@
       first
       meta)
       
-  (-> (find db :systems)
+  (-> (find db :repositories)
       (recordset->tables))
 
   (-> (map-vals #(into {} (take 2 %)) db)
