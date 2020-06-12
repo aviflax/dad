@@ -149,9 +149,11 @@
   (let [recordset (map-entry :technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
                                                        "props" {"hosted" "true"}
                                                        "recommendations" [{"type" "assess", "date" "2011-09-15"}
-                                                                          {"type" "adopt", "date" "2012-01-12"}]}})
+                                                                          {"type" "adopt", "date" "2012-01-12"}]}
+                                            "Kafka"   {"links" {"main" "https://kafka.apache.org/"}}})
         expected {:technologies {{:name "Clojure"} {:links-main "https://clojure.org/"
-                                                    :hosted     "true"}}
+                                                    :hosted     "true"}
+                                 {:name "Kafka"}   {:links-main "https://kafka.apache.org/"}}
                   :technologies-recommendations [{:technology "Clojure" :type "assess" :date "2011-09-15"}
                                                  {:technology "Clojure" :type "adopt"  :date "2012-01-12"}]}
         res (#'et/recordset->tables recordset)]

@@ -70,7 +70,7 @@
                  [(->> (conj path k)
                        (join-names separator))
                   (if (and (map? v)
-                           (map? (val (first v))))
+                           (some-> v first val map?))
                     (flatten-paths v separator)
                     v)]))
              m)
@@ -132,32 +132,30 @@
        (map-vals fold-props)
        (map-vals #(flatten-paths % separator))
        (map #(split-record rs-name %))
-       (reduce merge)))
+       (reduce mc/deep-merge)))
 
 (defn flatten-db
   [db]
-  (->> (map recordset->tables db)
+  (->> (pmap recordset->tables db)
        (reduce merge)))
 
 (comment
   (require '[dad.db :as db] '[clojure.pprint :refer [pprint]])
-  
   (def db-path "/Users/avi.flax/dev/docs/architecture/docs-as-data/db")
   (def db (db/read db-path))
-
-  ; (-> db :technologies (select-keys ["Clojure"]))
-  ; (defn rand-val [m] (-> m seq rand-nth val))
+  (defn rand-val [m] (-> m seq rand-nth val))
   
   (-> (select-keys db [:technologies])
-      (update :technologies #(select-keys % ["Clojure"]))
+      (update :technologies #(select-keys % ["Clojure" "Kafka"]))
       (find :technologies)
       recordset->tables)
+      
+  (->  (select-keys db [:repositories]) :repositories count)
 
   (->> (mc/map-entry :technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
                                               "recommendations" [{"type" "assess", "date" "2011-09-15"}
                                                                  {"type" "adopt", "date" "2012-01-12"}]}})
        recordset->tables)
-  
   
   (-> (select-keys db [:technologies])
       (update :technologies #(select-keys % ["Clojure"]))
@@ -167,9 +165,8 @@
       first
       meta)
       
-  (-> (select-keys db [:systems])
-      (assoc :systems (select-keys (:systems db) ["BILCAS"]))
-      (pprint))
+  (-> (find db :systems)
+      (recordset->tables))
 
   (-> (map-vals #(into {} (take 2 %)) db)
       (flatten-db)
