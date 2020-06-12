@@ -136,7 +136,8 @@
 
 (defn flatten-db
   [db]
-  (->> (pmap recordset->tables db)
+  (->> (dissoc db :schemata)
+       (pmap recordset->tables)
        (reduce merge)))
 
 (comment
