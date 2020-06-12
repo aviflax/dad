@@ -32,6 +32,7 @@
        (str/join separator)
        (keyword)))
 
+; TODO: not currently working
 ; (s/def ::simple-map
 ;   (s/map-of (s/or :s string? :k keyword?)
 ;             (s/or :s ::non-empty-scalar
@@ -136,22 +137,15 @@
        (map #(split-record rs-name %))
        (reduce dm/deep-merge)))
 
-(recordset->tables
-  (mc/map-entry :technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
-                                                       "props" {"hosted" "true"}
-                                                       "recommendations" [{"type" "assess", "date" "2011-09-15"}
-                                                                          {"type" "adopt", "date" "2012-01-12"}]}
-                                            "Kafka"   {"links" {"main" "https://kafka.apache.org/"}
-                                                       "recommendations" [{"type" "assess", "date" "2013-12-16"}
-                                                                          {"type" "adopt", "date" "2016-03-03"}]}}))
-
-
-
 (defn flatten-db
   [db]
   (->> (dissoc db :schemata)
        (pmap recordset->tables)
        (reduce merge)))
+
+
+
+
 
 (comment
   (require '[dad.db :as db] '[clojure.pprint :refer [pprint]])
@@ -185,6 +179,7 @@
   (-> (map-vals #(into {} (take 2 %)) db)
       (flatten-db)
       (pprint))
+  
   (flatten-db db)
-  (s/exercise ::tables)
-)
+  
+  (s/exercise ::tables))

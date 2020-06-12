@@ -1,15 +1,15 @@
 (ns dad.db.export.tables-test
   (:require [clojure.spec.alpha :as s]
-            [clojure.spec.test.alpha :as st]
-            [clojure.test :refer [deftest is are testing]]
+            [clojure.test :refer [deftest is are]]
             [dad.db.export.tables :as et]
             [expound.alpha :as expound]
             [medley.core :as mc :refer [map-entry]]))
 
 ; See https://github.com/bhb/expound#printer-options
-(set! s/*explain-out* (expound/custom-printer {:print-specs? false :theme :figwheel-theme}))
+; (set! s/*explain-out* (expound/custom-printer {:print-specs? false :theme :figwheel-theme}))
 
-(st/instrument `et/add-fk `et/fold-props)
+; TODO: not currently working
+; (st/instrument `et/add-fk `et/fold-props)
 
 (deftest add-fk
   (let [rec-m {:type "assess"
