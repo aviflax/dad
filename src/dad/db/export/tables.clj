@@ -7,6 +7,7 @@
             [medley.core :as mc :refer [map-keys map-vals]]))
 
 ;; Maybe should this be a library, something like flattt -> Flatten To Tables — ?
+;; Prior art: https://github.com/OpenDataServices/flatten-tool
 
 (s/def ::non-blank-string (s/and string? (complement str/blank?)))
 (s/def ::non-empty-scalar (s/or :number number?
@@ -178,12 +179,12 @@
       first
       meta)
       
-  (-> (find db :repositories)
+  (-> (find db :systems)
       (recordset->tables))
 
   (-> (map-vals #(into {} (take 2 %)) db)
       (flatten-db)
       (pprint))
-  
+  (flatten-db db)
   (s/exercise ::tables)
 )
