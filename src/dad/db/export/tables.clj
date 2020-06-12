@@ -44,7 +44,7 @@
   [m]
   (postwalk
     (fn [v]
-      (if-let [props (and (map? v) (:props v))]
+      (if-let [props (and (map? v) (map? (:props v)) (:props v))]
         (merge props (dissoc v :props))
         v))
     m))
