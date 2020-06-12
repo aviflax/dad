@@ -83,7 +83,7 @@
 (defn- add-fk
   [rec-m fk-table-name fk-table-key-val]
   (let [col-name (singular fk-table-name)]
-    (-> (assoc rec-m col-name fk-table-key-val)
+    (-> (assoc rec-m col-name (name fk-table-key-val))
         (with-meta {::columns {col-name {::fk-table-name fk-table-name}}}))))
 
 (def separator "-")
