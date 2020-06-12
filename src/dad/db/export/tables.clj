@@ -135,7 +135,7 @@
        (map-vals fold-props)
        (map-vals #(flatten-paths % separator))
        (map #(split-record rs-name %))
-       (reduce dm/deep-merge)))
+       (reduce dm/deep-mergecat)))
 
 (defn flatten-db
   [db]

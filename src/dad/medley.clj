@@ -8,7 +8,7 @@
   "Be careful when using this! If any keys are the same except for casing, one will be lost."
   (sorted-map-by (fn [a b] (compare (lower-case a) (lower-case b)))))
 
-(defn deep-merge
+(defn deep-mergecat
   "Recursively merges maps together. If all the maps supplied have nested maps
   under the same keys, these nested maps are merged. Otherwise:
   
