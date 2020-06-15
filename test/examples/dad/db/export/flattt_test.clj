@@ -145,6 +145,23 @@
         res (#'f/split-record table-name record)]
     (is (s/valid? ::f/tables res) (expound/expound-str ::f/tables res expound-opts))))
 
+
+(deftest flatten-maps
+  (are [in expected] (= expected (#'f/flatten-paths in "-"))
+    
+    ;; in
+    {:systems {"Discourse" {"summary"    "Web forums that don’t suck."
+                            "links"      {"main" "https://discourse.org/"}
+                            "containers" {"web"   {"summary" "web server", "technology" "Tomcat"}
+                                          "db"    {"summary" "db server",  "technology" "Access"}
+                                          "cache" {"summary" "hot keys",   "technology" "PHP"}}}}}
+    ;; out
+    {:systems            {{:name "Discourse"} {}}
+     :systems-links      {{:system "Discourse" :name "main"}  {:val "https://discourse.org/"}}
+     :systems-containers {{:system "Discourse" :name "web"}   {:summary "web server" :technology "Tomcat"}
+                          {:system "Discourse" :name "db"}    {:summary "db server"  :technology "Access"}
+                          {:system "Discourse" :name "cache"} {:summary "hot keys"   :technology "PHP"}}}))
+
 (deftest recordset->tables
   (let [recordset (map-entry :technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
                                                        "props" {"hosted" "true"}
@@ -161,11 +178,27 @@
                                                  {:technology "Kafka"   :type "assess" :date "2013-12-16"}
                                                  {:technology "Kafka"   :type "adopt"  :date "2016-03-03"}]}
         res (#'f/recordset->tables recordset)]
-  (is (= expected res))
-  (is (s/valid? ::f/tables res) (expound/expound-str ::f/tables res expound-opts))
-  (doseq [row (:technologies-recommendations res)]
-    (is (= {::f/columns {:technology {::f/fk-table-name :technologies}}}
-           (meta row))))))
+    (is (= expected res))
+    (is (s/valid? ::f/tables res) (expound/expound-str ::f/tables res expound-opts))
+    (doseq [row (:technologies-recommendations res)]
+      (is (= {::f/columns {:technology {::f/fk-table-name :technologies}}}
+             (meta row)))))
+  
+  (let [recordset (map-entry :systems {"Discourse" {"links" {"main" "https://discourse.org/"}
+                                                    "containers" {"web"   {"summary" "web server", "technology" "Tomcat"}
+                                                                  "db"    {"summary" "db server",  "technology" "Access"}
+                                                                  "cache" {"summary" "hot keys",   "technology" "PHP"}}}})
+        expected  {:systems            {{:name "Discourse"} {:links-main "https://discourse.org/"}}
+                   :systems-containers {{:system "Discourse" :name "web"}   {:summary "web server" :technology "Tomcat"}
+                                        {:system "Discourse" :name "db"}    {:summary "db server"  :technology "Access"}
+                                        {:system "Discourse" :name "cache"} {:summary "hot keys"   :technology "PHP"}}}
+        res (#'f/recordset->tables recordset)]
+    (is (= expected res))
+    ; (is (s/valid? ::f/tables res) (expound/expound-str ::f/tables res expound-opts))
+    ; (doseq [row (:systems-containers res)]
+    ;   (is (= {::f/columns {:technology {::f/fk-table-name :systems}}}
+    ;          (meta row))))
+             ))
 
 (deftest flatten-db
   (let [db {:technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
