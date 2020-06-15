@@ -1,15 +1,16 @@
 (ns dad.db.export.flattt-test
   (:require [clojure.spec.alpha :as s]
+            [clojure.spec.test.alpha :as st]
             [clojure.test :refer [deftest is are]]
             [dad.db.export.flattt :as f]
             [expound.alpha :as expound]
             [medley.core :as mc :refer [map-entry]]))
 
 ; See https://github.com/bhb/expound#printer-options
-; (set! s/*explain-out* (expound/custom-printer {:print-specs? false :theme :figwheel-theme}))
+(def expound-opts {:print-specs? false})
 
 ; TODO: not currently working
-; (st/instrument `f/add-fk `f/fold-props)
+(st/instrument `f/add-fk `f/fold-props)
 
 (deftest add-fk
   (let [rec-m {:type "assess"
@@ -143,7 +144,7 @@
                                      :recommendations [{:type "assess" :date "2011-09-15"}
                                                        {:type "adopt"  :date "2012-01-12"}]})
         res (#'f/split-record table-name record)]
-    (is (s/valid? ::f/tables res) (s/explain-str ::f/tables res))))
+    (is (s/valid? ::f/tables res) (expound/expound-str ::f/tables res expound-opts))))
 
 (deftest recordset->tables
   (let [recordset (map-entry :technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
@@ -162,6 +163,6 @@
                                                  {:technology "Kafka" :type "adopt"  :date "2016-03-03"}]}
         res (#'f/recordset->tables recordset)]
   (is (= expected res))
-  (is (s/valid? ::f/tables res) (s/explain-str ::f/tables res))
+  (is (s/valid? ::f/tables res) (expound/expound-str ::f/tables res expound-opts))
   (is (= {::f/columns {:technology {::f/fk-table-name :technologies}}}
          (meta (first (:technologies-recommendations res)))))))
