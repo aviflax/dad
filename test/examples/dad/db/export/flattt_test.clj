@@ -145,16 +145,15 @@
         res (#'f/split-record table-name record)]
     (is (s/valid? ::f/tables res) (expound/expound-str ::f/tables res expound-opts))))
 
-
 (deftest flatten-maps
   (are [in expected] (= expected (#'f/flatten-paths in "-"))
     
     ;; in
-    {:systems {"Discourse" {"summary"    "Web forums that don’t suck."
-                            "links"      {"main" "https://discourse.org/"}
-                            "containers" {"web"   {"summary" "web server", "technology" "Tomcat"}
-                                          "db"    {"summary" "db server",  "technology" "Access"}
-                                          "cache" {"summary" "hot keys",   "technology" "PHP"}}}}}
+    {:systems {:Discourse {:summary    "Web forums that don’t suck."
+                           :links      {:main "https://discourse.org/"}
+                           :containers {:web   {:summary "web server" :technology "Tomcat"}
+                                        :db    {:summary "db server"  :technology "Access"}
+                                        :cache {:summary "hot keys"   :technology "PHP"}}}}}
     ;; out
     {:systems            {{:name "Discourse"} {}}
      :systems-links      {{:system "Discourse" :name "main"}  {:val "https://discourse.org/"}}

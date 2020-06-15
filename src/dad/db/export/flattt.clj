@@ -87,6 +87,74 @@
              m)
         (into {}))))
 
+(defn- kp->tp
+  [kp]
+  (cond
+    (> (count kp) 2)
+    [(first kp) (second kp) (join-names "-" (drop 2 kp))]
+    
+    :else
+    kp))
+
+(defn- pathize
+  {:derived-from "https://andersmurphy.com/2019/11/30/clojure-flattening-key-paths.html"}
+  ([m]
+   (pathize m []))
+  ([m path]
+   (mapcat (fn [[k v]]
+             (if (and (map? v) (seq v))
+               (pathize v (conj path k))
+               [(conj path k) v]))
+           m)))
+
+(->> {:systems {:Discourse {:summary    "Web forums that don’t suck."
+                            :links      {:main "https://discourse.org/"}
+                            :containers {:web   {:summary "web server" :technology "Tomcat"}
+                                         :db    {:summary "db server"  :technology "Access"}
+                                         :cache {:summary "hot keys"   :technology "PHP"}}}}}
+    (pathize)
+    (partition 2)
+    (reduce (fn [r [kp v]]
+              (assoc-in r (kp->tp kp) v))
+            {})
+    clojure.pprint/pprint)
+
+(->>
+  [[:systems :Discourse :summary]
+   [:systems :Discourse :links :main]
+   [:systems :Discourse :containers :web :summary]
+   [:systems :Discourse :containers :web :technology]]
+  (map kp->tp)
+  clojure.pprint/pprint)
+
+#_(
+[:systems :Discourse :containers :web :technology]
+->
+[:systems-containers [:system :Discourse :name :web] :technology]
+)
+
+
+(let [kp  [:systems :Discourse :containers :web :technology]
+      kpp (partition 2 2 (repeat :!) kp)
+      table  (->> kpp
+                  butlast
+                  (map first)
+                  (join-names "-"))
+      keys (-> kpp
+                (butlast)
+                (->> (mapv vec))
+                (update-in [0 0] singular)
+                (assoc-in [1 0] :name)
+                (->> (into {})))
+      col  (last kp)]
+  (println "kp:    " kp)
+  (println "kpp:   " kpp)
+  (println "table: " table)
+  (println "keys:  " keys)
+  (println "col:   " col))
+
+
+
 (defn- ->key-col
   [k]
   (cond
