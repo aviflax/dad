@@ -143,11 +143,14 @@
                (assoc-in [1 0] :name)
                (->> (into {})))
       col  (last kp)]
-  (println "kp:    " kp)
-  (println "kpp:   " kpp)
-  (println "table: " table)
-  (println "keys:  " keys)
-  (println "col:   " col))
+  ; (println "kp:    " kp)
+  ; (println "kpp:   " kpp)
+  ; (println "table: " table)
+  ; (println "keys:  " keys)
+  ; (println "col:   " col)
+  {:table-name table
+   :keys keys
+   :col-name col})
 
 
 
