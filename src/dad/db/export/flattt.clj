@@ -4,6 +4,7 @@
   Prior art: https://github.com/OpenDataServices/flatten-tool"
   (:require [clojure.string :as str]
             [clojure.spec.alpha :as s]
+            [clojure.spec.gen.alpha :as gen]
             [clojure.walk :as walk :refer [postwalk]]
             [dad.medley :as dm]
             [inflections.core :refer [singular]]
@@ -32,24 +33,31 @@
        (str/join separator)
        (keyword)))
 
-; TODO: not currently working
-; (s/def ::simple-map
-;   (s/map-of (s/or :s string? :k keyword?)
-;             (s/or :s ::non-empty-scalar
-;                   :sc (s/coll-of ::non-empty-scalar :gen-max 10)
-;                   :m ::simple-map)
-;             :gen-max 10))
-;
-; (s/fdef fold-props
-;   :args (s/cat :m (s/with-gen ::simple-map
-;                     #(gen/frequency [[9 (s/gen ::simple-map)] [1 (gen/return {:foo {:bar :baz :props {:blargh :flargh}}})]])))
-;   :ret  ::simple-map
-;   :fn   (fn [{{in :m} :args
-;               out     :ret}]
-;           (let [map-seq (fn map-seq [m] (tree-seq map? #(interleave (keys %) (vals %)) m))]
-;             (if (some :props (map-seq (s/unform ::simple-map in)))
-;               (not-any? :props (map-seq (s/unform ::simple-map out)))
-;               (= out in)))))
+;; This is used only for testing.
+(s/def ::simple-test-map
+  ;; Using every-kv and every here because they don’t conform, and conformance is both unneeded here
+  ;; and also causes problems in the fdef:fn.
+  (s/every-kv (s/or :s string? :k keyword?)
+              (s/or :s ::non-empty-scalar
+                    :sc (s/every ::non-empty-scalar :gen-max 5)
+                    :scm (s/every ::simple-test-map :gen-max 2)
+                    :m ::simple-test-map)
+              :gen-max 5
+              :conform-keys true))
+
+(s/fdef fold-props
+  :args (s/cat :m (s/with-gen ::simple-test-map
+                    #(gen/frequency [[9 (s/gen ::simple-test-map)]
+                                     [1 (gen/return {:foo {:bar "baz"
+                                                           :props (gen/generate (s/gen ::simple-test-map))}})]])))
+  :ret  ::simple-test-map
+  :fn   (fn [{{in :m} :args
+              out     :ret}]
+          (let [map-seq (fn map-seq [m] (tree-seq map? #(interleave (keys %) (vals %)) m))]
+            (if (some :props (map-seq in))
+              ; TODO: this is incomplete; it doesn’t assert that the entries of :props are retained
+              (not-any? :props (map-seq out))
+              (= out in)))))
 
 (defn- fold-props
   [m]
@@ -142,10 +150,6 @@
   (->> (dissoc db :schemata)
        (pmap recordset->tables)
        (reduce merge)))
-
-
-
-
 
 (comment
   (require '[dad.db :as db] '[clojure.pprint :refer [pprint]])
