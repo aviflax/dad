@@ -1,6 +1,6 @@
 (ns dad.db.export.flattt-test
   (:require [clojure.spec.alpha :as s]
-            [clojure.spec.test.alpha :as st]
+            [clojure.spec.test.alpha :as stest]
             [clojure.test :refer [deftest is are]]
             [dad.db.export.flattt :as f]
             [expound.alpha :as expound]
@@ -9,8 +9,7 @@
 ; See https://github.com/bhb/expound#printer-options
 (def expound-opts {:print-specs? false})
 
-; TODO: not currently working
-(st/instrument `f/add-fk `f/fold-props)
+(stest/instrument (stest/enumerate-namespace 'dad.db.export.flattt))
 
 (deftest add-fk
   (let [rec-m {:type "assess"
