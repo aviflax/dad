@@ -135,17 +135,13 @@
 
 
 (let [kp  [:systems :Discourse :containers :web :technology]
-      kpp (partition 2 2 (repeat :!) kp)
-      table  (->> kpp
-                  butlast
-                  (map first)
+      kpp (partition 2 kp)
+      table  (->> (map first kpp)
                   (join-names "-"))
-      keys (-> kpp
-                (butlast)
-                (->> (mapv vec))
-                (update-in [0 0] singular)
-                (assoc-in [1 0] :name)
-                (->> (into {})))
+      keys (-> (mapv vec kpp)
+               (update-in [0 0] singular)
+               (assoc-in [1 0] :name)
+               (->> (into {})))
       col  (last kp)]
   (println "kp:    " kp)
   (println "kpp:   " kpp)
