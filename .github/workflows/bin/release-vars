@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# This script is meant to run within GitHub Actions (GHA). Its purpose is to set the environment
+# variables RELEASE_TAG and PRERELEASE for use by subsequent steps in a GHA job.
+
+set -eu
+
+# Docs on the env vars prefixed with GITHUB_ may be found here:
+#  https://help.github.com/en/actions/configuring-and-managing-workflows/using-environment-variables
+# EXCEPT for GITHUB_BRANCH, which is created and exported in the job definition in the workflow
+# YAML definition file. I’m doing that because it’s the only way I could find to get the bare name
+# of the branch that triggered the workflow run, across various trigger events.
+# For example see https://github.community/t/how-to-get-pr-branch-name-in-github-actions/16598
+
+# I’m not super interested in the concept of version numbers; they’re super arbitrary. That said,
+# I’m planning to publish a Homebrew formula for this tool, and Homebrew really, really cares
+# about version numbers. Which is fine. So be it. So it goes.
+VERSION="$(date "+%Y.%m.%d").$GITHUB_RUN_NUMBER"
+
+if [[ $GITHUB_BRANCH == 'main' ]]; then
+  RELEASE_TAG="release-$VERSION"
+  PRERELEASE='false'
+else
+  RELEASE_TAG="prerelease-$VERSION-$GITHUB_BRANCH"
+  PRERELEASE='true'
+fi
+
+# These lines use a GHA construct called a “Workflow Command”
+#  see https://help.github.com/en/actions/reference/workflow-commands-for-github-actions
+echo "::set-env name=RELEASE_TAG::$RELEASE_TAG"
+echo "::set-env name=PRERELEASE::$PRERELEASE"
