@@ -73,3 +73,36 @@ jobs:
         with:
           name: dad-mac-amd64
           path: target/dad
+
+  release:
+    name: Create release
+    needs: [test, build]
+    runs-on: ubuntu-latest
+    steps:
+       - name: Checkout code
+         uses: actions/checkout@v2
+       - name: Download artifacts from step “build”
+         uses: actions/download-artifact@v2
+       - name: "DEBUG: Display structure of downloaded files"
+         run: ls -Rlh
+       - name: Export env vars RELEASE_TAG and PRERELEASE
+         run: .github/workflows/bin/release-tag
+       - name: Create release
+         id: create_release
+         uses: actions/create-release@v1
+         env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Provided by Actions
+         with:
+           tag_name: ${{ env.RELEASE_TAG }}
+           release_name: ${{ env.RELEASE_TAG }}
+           draft: false
+           prerelease: ${{ env.PRERELEASE }}
+       - name: Upload release asset
+         uses: actions/upload-release-asset@v1
+         env:
+           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Provided by Actions
+         with:
+           upload_url: ${{ steps.create_release.outputs.upload_url }}
+           asset_path: ./my-artifact.zip
+           asset_name: my-artifact.zip
+           asset_content_type: application/zip
