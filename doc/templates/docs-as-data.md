@@ -1,4 +1,4 @@
-# Docs as Data
+# What is “Docs as Data”?
 
 I’m terribly sorry, but I have not yet had a chance to articulate what this *is* exactly, not
 really, not quite yet. You see, I’ve been applying the [Docs as **Code**][dac] philosophy within

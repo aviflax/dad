@@ -23,16 +23,17 @@ source code thoroughly before usage, **and** you’re comfortable running the to
 ## Documentation
 
 * [Contributing][contributing]
+* [Development](doc/built/dev/)
 
 
 [cli]: https://en.wikipedia.org/wiki/Command-line_interface
 [clojure]: https://clojure.org/
 [contributing]: doc/contributing.md
 [django]: https://www.djangoproject.com/
-[docs-as-data]: doc/docs-as-data.md
+[docs-as-data]: doc/built/docs-as-data.md
 [jinja]: https://jinja.palletsprojects.com/en/2.11.x/
 [liquid]: https://shopify.github.io/liquid/
 [markdown]: https://en.wikipedia.org/wiki/Markdown
 [repl]: https://en.wikipedia.org/wiki/REPL
-[templates]: doc/templates.md
+[templates]: doc/built/templates.md
 [yaml]: https://yaml.org/
