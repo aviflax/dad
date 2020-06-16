@@ -2,9 +2,9 @@
   (:require [clojure.java.io :refer [file]]
             [clojure.string :as str]
             [dad.files :as files :refer [relative-path]]
-            [dad.yaml :as yaml]
             [dad.rendering.filters :as filters]
             [dad.rendering.tags :as tags]
+            [dad.yaml :as yaml]
             [selmer.parser :as parser :refer [render]])
   (:import [java.io File]))
 

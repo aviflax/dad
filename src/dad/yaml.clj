@@ -1,7 +1,7 @@
 (ns dad.yaml
   (:refer-clojure :exclude [file-seq])
-  (:require [clojure.java.io :as io]
-            [clj-yaml.core :as yaml])
+  (:require [clj-yaml.core :as yaml]
+            [clojure.java.io :as io])
   (:import [java.io File FileNotFoundException]))
 
 (set! *warn-on-reflection* true)
