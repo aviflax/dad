@@ -11,6 +11,13 @@
             [medley.core :as mc :refer [map-keys map-vals]]))
 
 (s/def ::non-blank-string (s/and string? (complement str/blank?)))
+
+(defn scalar?
+  [v]
+  (or (number? v) (string? v) (keyword? v)))
+
+(s/def ::scalar scalar?)
+
 (s/def ::non-empty-scalar (s/or :number number?
                                 :keyword keyword?
                                 :string ::non-blank-string))
@@ -100,10 +107,16 @@
   ([m]
    (pathize m []))
   ([m path]
+   ; (println "map:" m "\npath:" path "\n\n")
    (mapcat (fn [[k v]]
-             (if (and (map? v) (seq v))
-               (pathize v (conj path k))
-               [(conj path k) v]))
+             ; (println "key:" k "\n" "val:" v "\n\n\n")
+             (cond
+               (and (map? v) (seq v))  (pathize v (conj path k))
+               (and (not (map? v))
+                    (coll? v)
+                    (map? (first v)))  (->> (map-indexed (fn [i v] (pathize v (conj path k i))) v)
+                                            (apply concat))
+               :else                   [(conj path k) v]))
            m)))
 
 (defn path+value->cell
@@ -118,7 +131,7 @@
                    (assoc-in [1 0] :name)
                    (->> (into {})))
                {:name (name (second kp))})
-        col  (last kp)]
+        col-name  (last kp)]
     ; (println "kp:    " kp)
     ; (println "kpp:   " kpp)
     ; (println "table: " table)
@@ -126,7 +139,7 @@
     ; (println "col:   " col)
     {:table-name table
      :keys keys
-     :col-name col
+     :col-name (if (odd? (count kp)) col-name :val)
      :val v}))
 
 
@@ -146,12 +159,12 @@
                                          :db    {:summary "db server"  :technology "Access"}
                                          :cache {:summary "hot keys"   :technology "PHP"}}}}}
     (map->tables))
-    ; clojure.pprint/pprint)
 
 (->> {:technologies {:Clojure {:links {:main "https://clojure.org/"}
                                :recommendations [{:type "assess" :date "2011-09-15"}
                                                  {:type "adopt"  :date "2012-01-12"}]}}}
-     (pathize))
+     (map->tables)
+     clojure.pprint/pprint)
 
 (->> {:technologies {:Clojure {:links {:main "https://clojure.org/"}
                                :recommendations [{:type "assess" :date "2011-09-15"}
@@ -159,13 +172,13 @@
      (map->tables))
 
 
-(->>
-  [[:systems :Discourse :summary]
-   [:systems :Discourse :links :main]
-   [:systems :Discourse :containers :web :summary]
-   [:systems :Discourse :containers :web :technology]]
-  (map kp->tp)
-  clojure.pprint/pprint)
+; (->>
+;   [[:systems :Discourse :summary]
+;    [:systems :Discourse :links :main]
+;    [:systems :Discourse :containers :web :summary]
+;    [:systems :Discourse :containers :web :technology]]
+;   (map kp->tp)
+;   clojure.pprint/pprint)
 
 #_(
   [:systems :Discourse :containers :web :technology]
