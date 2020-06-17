@@ -38,10 +38,10 @@ jobs:
   build:
     name: Build executables
     # This job takes way too long (~5 mins as of this writing) to do it on every single push, even
-    # when no PR is open. So we’ll run it for pushes to master (which includes merging a PR) and
+    # when no PR is open. So we’ll run it for pushes to main (which includes merging a PR) and
     # when opening, synchronizing (pushing to), or reopening a PR.
     if: |
-      (github.event_name == 'push' && github.ref == 'master')
+      (github.event_name == 'push' && github.ref == 'main')
       ||
       (github.event_name == 'pull_request' && (   github.event.action == 'opened'
                                                || github.event.action == 'synchronize'
