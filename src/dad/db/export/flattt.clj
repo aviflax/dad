@@ -133,26 +133,28 @@
 [:systems-containers [:system :Discourse :name :web] :technology]
 )
 
+(defn path+value->cell
+  [path v]
+  (let [kp  path ;[:systems :Discourse :containers :web :technology]
+        kpp (partition 2 kp)
+        table  (->> (map first kpp)
+                    (join-names "-"))
+        keys (-> (mapv vec kpp)
+                 (update-in [0 0] singular)
+                 (assoc-in [1 0] :name)
+                 (->> (into {})))
+        col  (last kp)]
+    ; (println "kp:    " kp)
+    ; (println "kpp:   " kpp)
+    ; (println "table: " table)
+    ; (println "keys:  " keys)
+    ; (println "col:   " col)
+    {:table-name table
+     :keys keys
+     :col-name col
+     :val v})
 
-(let [kp  [:systems :Discourse :containers :web :technology]
-      kpp (partition 2 kp)
-      table  (->> (map first kpp)
-                  (join-names "-"))
-      keys (-> (mapv vec kpp)
-               (update-in [0 0] singular)
-               (assoc-in [1 0] :name)
-               (->> (into {})))
-      col  (last kp)]
-  ; (println "kp:    " kp)
-  ; (println "kpp:   " kpp)
-  ; (println "table: " table)
-  ; (println "keys:  " keys)
-  ; (println "col:   " col)
-  {:table-name table
-   :keys keys
-   :col-name col})
-
-
+(path+value->cell [:systems :Discourse :containers :web :technology] "Tomcat")
 
 (defn- ->key-col
   [k]
