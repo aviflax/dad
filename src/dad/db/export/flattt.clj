@@ -119,18 +119,21 @@
                :else                   [(conj path k) v]))
            m)))
 
+(defn- val->key-val
+  [v]
+  (if (keyword? v)
+    (name v)
+    v))
+
 (defn path+value->cell
   [path v]
   (let [kp  path ;[:systems :Discourse :containers :web :technology]
         kpp (partition 2 kp)
-        table  (->> (map first kpp)
+        _ (println "kpp:" kpp)
+        table  (->> (take-nth 2 (butlast kp))
                     (join-names "-"))
-        keys (if (> (count kp) 3)
-               (-> (mapv vec kpp)
-                   (update-in [0 0] singular)
-                   (assoc-in [1 0] :name)
-                   (->> (into {})))
-               {:name (name (second kp))})
+        keys (->> (map (fn [[k v]] [(singular k) (val->key-val v)]) kpp)
+                  (into {}))
         col-name  (last kp)]
     ; (println "kp:    " kp)
     ; (println "kpp:   " kpp)
@@ -145,7 +148,8 @@
 
 (path+value->cell [:systems :Discourse :summary] "Web forums that don’t suck.")
 (path+value->cell [:systems :Discourse :containers :web :technology] "Tomcat")
-(path+value->cell [:systems :Discourse :containers :web :technology] "Tomcat")
+(path+value->cell [:systems :Discourse :containers :web :tags :regions] ["us", "uk"])
+(path+value->cell [:technologies :Clojure :recommendations 0 :type] "assess")
 
 (defn map->tables
   [m]
@@ -163,7 +167,8 @@
 (->> {:technologies {:Clojure {:links {:main "https://clojure.org/"}
                                :recommendations [{:type "assess" :date "2011-09-15"}
                                                  {:type "adopt"  :date "2012-01-12"}]}}}
-     (map->tables)
+     ; (map->tables)
+     (pathize) (partition 2)
      clojure.pprint/pprint)
 
 (->> {:technologies {:Clojure {:links {:main "https://clojure.org/"}
