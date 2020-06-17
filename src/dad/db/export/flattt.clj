@@ -132,8 +132,10 @@
         _ (println "kpp:" kpp)
         table  (->> (take-nth 2 (butlast kp))
                     (join-names "-"))
-        keys (->> (map (fn [[k v]] [(singular k) (val->key-val v)]) kpp)
-                  (into {}))
+        keys (->> (map (fn [[k v]] [(singular k) (val->key-val v)]) (butlast kpp))
+                  (into {})
+                  (merge (let [[_k v] (last kpp)]
+                           {(if (number? v) :id :name) (val->key-val v)})))
         col-name  (last kp)]
     ; (println "kp:    " kp)
     ; (println "kpp:   " kpp)
@@ -167,9 +169,9 @@
 (->> {:technologies {:Clojure {:links {:main "https://clojure.org/"}
                                :recommendations [{:type "assess" :date "2011-09-15"}
                                                  {:type "adopt"  :date "2012-01-12"}]}}}
-     ; (map->tables)
-     (pathize) (partition 2)
-     clojure.pprint/pprint)
+     (map->tables))
+     ; (pathize) (partition 2)
+     ; clojure.pprint/pprint)
 
 (->> {:technologies {:Clojure {:links {:main "https://clojure.org/"}
                                :recommendations [{:type "assess" :date "2011-09-15"}
