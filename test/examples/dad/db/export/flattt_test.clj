@@ -1,0 +1,168 @@
+(ns dad.db.export.flattt-test
+  (:require [clojure.spec.alpha :as s]
+            [clojure.spec.test.alpha :as stest]
+            [clojure.test :refer [deftest is are]]
+            [dad.db.export.flattt :as f]
+            [expound.alpha :as expound]
+            [medley.core :as mc :refer [map-entry]]))
+
+; See https://github.com/bhb/expound#printer-options
+(def expound-opts {:print-specs? false})
+
+(stest/instrument (stest/enumerate-namespace 'dad.db.export.flattt))
+
+(deftest add-fk
+  (let [rec-m {:type "assess"
+               :date "2011-09-15"}
+        fk-table-name :technologies
+        fk-table-key-val "Clojure"
+        expected {:technology "Clojure"
+                  :type "assess"
+                  :date "2011-09-15"}
+        expected-meta {::f/columns {:technology {::f/fk-table-name fk-table-name}}}
+        res (#'f/add-fk rec-m fk-table-name fk-table-key-val)]
+    (is (= expected res))
+    (is (= expected-meta (meta res)))))
+
+(deftest fold-props
+  (are [in expected] (= expected (#'f/fold-props in))
+  
+    ; in
+    {:containers  {:API     {:props {:marathon-ids {:kp "/saclib/api"}}}
+                   :Hutch   {:props {:marathon-ids {:kp "/saclib/hutch"}
+                                     :technologies ["RabbitMQ" "Ruby"]}}
+                   :Sidekiq {:props {:marathon-ids {:kp "/saclib/sidekiq"}
+                                     :technologies ["Ruby"]}}
+                   :Web     {:props {:marathon-ids {:kp "/saclib/web"}}}}
+     :description "Salad Container Library -- builds libraries of salad containers (duh)"
+     :props       {:regions       ["kp"]
+                   :marathon-ids  {:kp "/saclib"}
+                   :repos         ["saclib"]
+                   :related-repos ["saclib_adapter" "saclib-client"]}}
+    ; expected
+    {:containers   {:API     {:marathon-ids {:kp "/saclib/api"}}
+                    :Hutch   {:marathon-ids {:kp "/saclib/hutch"}
+                              :technologies ["RabbitMQ" "Ruby"]}
+                    :Sidekiq {:marathon-ids {:kp "/saclib/sidekiq"}
+                              :technologies ["Ruby"]}
+                    :Web     {:marathon-ids {:kp "/saclib/web"}}}
+     :description   "Salad Container Library -- builds libraries of salad containers (duh)"
+     :regions       ["kp"]
+     :marathon-ids  {:kp "/saclib"}
+     :repos         ["saclib"]
+     :related-repos ["saclib_adapter" "saclib-client"]}))
+
+(deftest flatten-paths
+  (are [in expected] (= expected (#'f/flatten-paths in "-"))
+  
+    ; in
+    {:containers    {:API     {:marathon-ids {:kp "/saclib/api"}}
+                     :Hutch   {:marathon-ids {:kp "/saclib/hutch"}
+                               :technologies ["RabbitMQ" "Ruby"]}
+                     :Sidekiq {:marathon-ids {:kp "/saclib/sidekiq"}
+                               :technologies ["Ruby"]}
+                     :Web     {:marathon-ids {:kp "/saclib/web"}}}
+     :description   "Salad Container Library -- builds libraries of salad containers (duh)"
+     :regions       ["kp"]
+     :marathon-ids  {:kp "/saclib"}
+     :repos         ["saclib"]
+     :related-repos ["saclib_adapter" "saclib-client"]}
+
+    ; expected
+    {:containers      {:API     {:marathon-ids-kp "/saclib/api"}
+                       :Hutch   {:marathon-ids-kp "/saclib/hutch"
+                                 :technologies    ["RabbitMQ" "Ruby"]}
+                       :Sidekiq {:marathon-ids-kp "/saclib/sidekiq"
+                                 :technologies    ["Ruby"]}
+                       :Web     {:marathon-ids-kp "/saclib/web"}}
+     :description     "Salad Container Library -- builds libraries of salad containers (duh)"
+     :regions         ["kp"]
+     :marathon-ids-kp "/saclib"
+     :repos           ["saclib"]
+     :related-repos   ["saclib_adapter" "saclib-client"]}))
+
+(deftest split-record
+  (are [table-name record expected] (= expected (#'f/split-record table-name record))
+    ; table-name
+    :technologies
+    ; record
+    (map-entry "Clojure" {:links-main "https://clojure.org/"
+                          :recommendations [{:type "assess" :date "2011-09-15"}
+                                            {:type "adopt"  :date "2012-01-12"}]})
+    ; expected
+    {:technologies                 {{:name "Clojure"} {:links-main "https://clojure.org/"}}
+     :technologies-recommendations [{:technology "Clojure" :type "assess" :date "2011-09-15"}
+                                    {:technology "Clojure" :type "adopt"  :date "2012-01-12"}]}
+
+    ; --------------------
+
+    ; table-name
+    :systems
+    ; record
+    (map-entry "Discourse" {:links-main "https://discourse.org/"
+                            :containers {:web   {:summary "web server" :technology "Tomcat"}
+                                         :db    {:summary "db server"  :technology "Access"}
+                                         :cache {:summary "hot keys"   :technology "PHP"}}})
+    ; expected
+    {:systems            {{:name "Discourse"} {:links-main "https://discourse.org/"}}
+     :systems-containers {{:system "Discourse" :name "web"}   {:summary "web server" :technology "Tomcat"}
+                          {:system "Discourse" :name "db"}    {:summary "db server"  :technology "Access"}
+                          {:system "Discourse" :name "cache"} {:summary "hot keys"   :technology "PHP"}}}
+
+    ; --------------------
+    
+    ; table-name
+    :systems
+    ; record
+    (map-entry "SACLIB" {:containers      {:API     {:marathon-ids-kp "/saclib/api"}
+                                           :Hutch   {:marathon-ids-kp "/saclib/hutch"
+                                                     :technologies ["RabbitMQ" "Ruby"]}
+                                           :Sidekiq {:marathon-ids-kp "/saclib/sidekiq"
+                                                     :technologies ["Ruby"]}
+                                           :Web     {:marathon-ids-kp "/saclib/web"}}
+                         :description     "Salad Container Library -- builds libraries of salad containers (duh)"
+                         :regions         ["kp"]
+                         :marathon-ids-kp "/saclib"
+                         :repos           ["saclib"]
+                         :related-repos   ["saclib_adapter" "saclib-client"]})
+    ; expected
+    {:systems            {{:name "SACLIB"} {:description     "Salad Container Library -- builds libraries of salad containers (duh)"
+                                            :regions         ["kp"]
+                                            :marathon-ids-kp "/saclib"
+                                            :repos           ["saclib"]
+                                            :related-repos   ["saclib_adapter" "saclib-client"]}}
+     :systems-containers {{:system "SACLIB" :name "API"}     {:marathon-ids-kp "/saclib/api"}
+                          {:system "SACLIB" :name "Hutch"}   {:marathon-ids-kp "/saclib/hutch"
+                                                             :technologies    ["RabbitMQ" "Ruby"]}
+                          {:system "SACLIB" :name "Sidekiq"} {:marathon-ids-kp "/saclib/sidekiq"
+                                                             :technologies    ["Ruby"]}
+                          {:system "SACLIB" :name "Web"}     {:marathon-ids-kp "/saclib/web"}}})
+
+  (let [table-name :technologies
+        record (map-entry "Clojure" {:links-main "https://clojure.org/"
+                                     :recommendations [{:type "assess" :date "2011-09-15"}
+                                                       {:type "adopt"  :date "2012-01-12"}]})
+        res (#'f/split-record table-name record)]
+    (is (s/valid? ::f/tables res) (expound/expound-str ::f/tables res expound-opts))))
+
+(deftest recordset->tables
+  (let [recordset (map-entry :technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
+                                                       "props" {"hosted" "true"}
+                                                       "recommendations" [{"type" "assess", "date" "2011-09-15"}
+                                                                          {"type" "adopt", "date" "2012-01-12"}]}
+                                            "Kafka"   {"links" {"main" "https://kafka.apache.org/"}
+                                                       "recommendations" [{"type" "assess", "date" "2013-12-16"}
+                                                                          {"type" "adopt", "date" "2016-03-03"}]}})
+        expected {:technologies {{:name "Clojure"} {:links-main "https://clojure.org/"
+                                                    :hosted     "true"}
+                                 {:name "Kafka"}   {:links-main "https://kafka.apache.org/"}}
+                  :technologies-recommendations [{:technology "Clojure" :type "assess" :date "2011-09-15"}
+                                                 {:technology "Clojure" :type "adopt"  :date "2012-01-12"}
+                                                 {:technology "Kafka" :type "assess" :date "2013-12-16"}
+                                                 {:technology "Kafka" :type "adopt"  :date "2016-03-03"}]}
+        res (#'f/recordset->tables recordset)]
+  (is (= expected res))
+  (is (s/valid? ::f/tables res) (expound/expound-str ::f/tables res expound-opts))
+  (doseq [row (:technologies-recommendations res)]
+    (is (= {::f/columns {:technology {::f/fk-table-name :technologies}}}
+           (meta row))))))
