@@ -51,9 +51,10 @@
                              test.check  {:git/url "https://github.com/clojure/test.check"
                                           :sha "cdc0b1d5bc7ef450a25f6c605657d2a6f40a7dd4"
                                           :tag "test.check-1.0.0"}
+                             ; See https://github.com/bhb/expound/issues/160#issuecomment-645098427
+                             ; for the reason this is using a non-tagged commit.
                              expound     {:git/url "https://github.com/bhb/expound"
-                                          :sha "a305d63c6a0ccc68b33c6575388282463a7101a0"
-                                          :tag "v0.8.4"}}}
+                                          :sha "391e45f8bb94a08a054c5c8ded82bbc8acbdde0e"}}}
   
   :main       {:main-opts ["-m" "dad.cli"]
                :jvm-opts  ["-Dapple.awt.UIElement=true"

@@ -7,7 +7,7 @@
             [medley.core :as mc :refer [map-entry]]))
 
 ; See https://github.com/bhb/expound#printer-options
-(def expound-opts {:print-specs? false})
+(set! s/*explain-out* (expound/custom-printer {:print-specs? false}))
 
 (stest/instrument (stest/enumerate-namespace 'dad.db.export.flattt))
 
@@ -143,7 +143,7 @@
                                      :recommendations [{:type "assess" :date "2011-09-15"}
                                                        {:type "adopt"  :date "2012-01-12"}]})
         res (#'f/split-record table-name record)]
-    (is (s/valid? ::f/tables res) (expound/expound-str ::f/tables res expound-opts))))
+    (is (s/valid? ::f/tables res) (s/explain-str ::f/tables res))))
 
 (deftest flatten-maps
   (are [in expected] (= expected (#'f/flatten-paths in "-"))
@@ -178,7 +178,7 @@
                                                  {:technology "Kafka"   :type "adopt"  :date "2016-03-03"}]}
         res (#'f/recordset->tables recordset)]
     (is (= expected res))
-    (is (s/valid? ::f/tables res) (expound/expound-str ::f/tables res expound-opts))
+    (is (s/valid? ::f/tables res) (s/explain-str ::f/tables res))
     (doseq [row (:technologies-recommendations res)]
       (is (= {::f/columns {:technology {::f/fk-table-name :technologies}}}
              (meta row)))))
@@ -193,7 +193,7 @@
                                         {:system "Discourse" :name "cache"} {:summary "hot keys"   :technology "PHP"}}}
         res (#'f/recordset->tables recordset)]
     (is (= expected res))
-    ; (is (s/valid? ::f/tables res) (expound/expound-str ::f/tables res expound-opts))
+    ; (is (s/valid? ::f/tables res) (s/explain-str ::f/tables res))
     ; (doseq [row (:systems-containers res)]
     ;   (is (= {::f/columns {:technology {::f/fk-table-name :systems}}}
     ;          (meta row))))
