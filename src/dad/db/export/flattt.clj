@@ -70,19 +70,18 @@
 
 (defn- flatten-paths
   {:derived-from "https://andersmurphy.com/2019/11/30/clojure-flattening-key-paths.html"}
-  ([m separator]
-   (flatten-paths m separator []))
-  ([m separator path]
+  ([m]
+   (flatten-paths m []))
+  ([m path]
    (->> (map (fn [[k v]]
                (if (and (map? v)
                         (not-empty v)
                         (not (map? (val (first v)))))
-                 (flatten-paths v separator (conj path k))
-                 [(->> (conj path k)
-                       (join-names separator))
+                 (flatten-paths v (conj path k))
+                 [(conj path k)
                   (if (and (map? v)
                            (some-> v first val map?))
-                    (flatten-paths v separator)
+                    (flatten-paths v)
                     v)]))
              m)
         (into {}))))
@@ -107,17 +106,58 @@
                [(conj path k) v]))
            m)))
 
+(defn path+value->cell
+  [path v]
+  (let [kp  path ;[:systems :Discourse :containers :web :technology]
+        kpp (partition 2 kp)
+        table  (->> (map first kpp)
+                    (join-names "-"))
+        keys (if (> (count kp) 3)
+               (-> (mapv vec kpp)
+                   (update-in [0 0] singular)
+                   (assoc-in [1 0] :name)
+                   (->> (into {})))
+               {:name (name (second kp))})
+        col  (last kp)]
+    ; (println "kp:    " kp)
+    ; (println "kpp:   " kpp)
+    ; (println "table: " table)
+    ; (println "keys:  " keys)
+    ; (println "col:   " col)
+    {:table-name table
+     :keys keys
+     :col-name col
+     :val v}))
+
+
+(path+value->cell [:systems :Discourse :summary] "Web forums that don’t suck.")
+(path+value->cell [:systems :Discourse :containers :web :technology] "Tomcat")
+(path+value->cell [:systems :Discourse :containers :web :technology] "Tomcat")
+
+(defn map->tables
+  [m]
+  (->> (pathize m)
+       (partition 2)
+       (map (fn [[p v]] (path+value->cell p v)))))
+
 (->> {:systems {:Discourse {:summary    "Web forums that don’t suck."
                             :links      {:main "https://discourse.org/"}
                             :containers {:web   {:summary "web server" :technology "Tomcat"}
                                          :db    {:summary "db server"  :technology "Access"}
                                          :cache {:summary "hot keys"   :technology "PHP"}}}}}
-    (pathize)
-    (partition 2)
-    (reduce (fn [r [kp v]]
-              (assoc-in r (kp->tp kp) v))
-            {})
-    clojure.pprint/pprint)
+    (map->tables))
+    ; clojure.pprint/pprint)
+
+(->> {:technologies {:Clojure {:links {:main "https://clojure.org/"}
+                               :recommendations [{:type "assess" :date "2011-09-15"}
+                                                 {:type "adopt"  :date "2012-01-12"}]}}}
+     (pathize))
+
+(->> {:technologies {:Clojure {:links {:main "https://clojure.org/"}
+                               :recommendations [{:type "assess" :date "2011-09-15"}
+                                                 {:type "adopt"  :date "2012-01-12"}]}}}
+     (map->tables))
+
 
 (->>
   [[:systems :Discourse :summary]
@@ -128,33 +168,10 @@
   clojure.pprint/pprint)
 
 #_(
-[:systems :Discourse :containers :web :technology]
-->
-[:systems-containers [:system :Discourse :name :web] :technology]
-)
+  [:systems :Discourse :containers :web :technology]
+  ->
+  [:systems-containers [:system :Discourse :name :web] :technology])
 
-(defn path+value->cell
-  [path v]
-  (let [kp  path ;[:systems :Discourse :containers :web :technology]
-        kpp (partition 2 kp)
-        table  (->> (map first kpp)
-                    (join-names "-"))
-        keys (-> (mapv vec kpp)
-                 (update-in [0 0] singular)
-                 (assoc-in [1 0] :name)
-                 (->> (into {})))
-        col  (last kp)]
-    ; (println "kp:    " kp)
-    ; (println "kpp:   " kpp)
-    ; (println "table: " table)
-    ; (println "keys:  " keys)
-    ; (println "col:   " col)
-    {:table-name table
-     :keys keys
-     :col-name col
-     :val v})
-
-(path+value->cell [:systems :Discourse :containers :web :technology] "Tomcat")
 
 (defn- ->key-col
   [k]
