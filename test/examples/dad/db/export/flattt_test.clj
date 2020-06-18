@@ -188,10 +188,20 @@
      :col-name   :summary
      :val        "Web forums that don’t suck."}
   
+    [:systems :Discourse :links :main]
+    "https://discourse.org"
+    {:table-name :systems-links
+     :p-keys     {:name "main" :system "Discourse"}
+     :f-keys     [{:this-table-col :system
+                   :f-table-name   :systems
+                   :f-table-col    :name}]
+     :col-name   :val
+     :val        "https://discourse.org"}
+  
     [:systems :Discourse :containers :web :technology]
     "Tomcat"
     {:table-name :systems-containers
-     :p-keys     {:system "Discourse" :name "web"}
+     :p-keys     {:name "web" :system "Discourse"}
      :f-keys     [{:this-table-col :system
                    :f-table-name   :systems
                    :f-table-col    :name}]
@@ -245,7 +255,7 @@
                                                  {:technology "Kafka"   :type "assess" :date "2013-12-16"}
                                                  {:technology "Kafka"   :type "adopt"  :date "2016-03-03"}]
                   :systems                      {{:name "Discourse"} {}}
-                  :systems-links                {{:name "main" :system "Discourse"} {:val "https://discourse.org/"}}
+                  :systems-links                {{:name "main" :system "Discourse"} {:val "https://discourse.org"}}
                   :systems-containers           {{:system "Discourse" :name "web"}   {:summary "web server" :technology "Tomcat"}
                                                  {:system "Discourse" :name "db"}    {:summary "db server"  :technology "Access"}
                                                  {:system "Discourse" :name "cache"} {:summary "hot keys"   :technology "PHP"}}}
