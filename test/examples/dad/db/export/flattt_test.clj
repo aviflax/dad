@@ -151,11 +151,11 @@
 
 (deftest pathize
   (are [in expected] (= expected (#'f/pathize in))
-  
     ; in
     {:technologies {:Clojure {:links {:main "https://clojure.org"}
                               :recommendations [{:type "assess" :date "2011-09-15"}
                                                 {:type "adopt"  :date "2012-01-12"}]}}}
+    
     ; expected
     {[:technologies :Clojure :links :main]             "https://clojure.org"
      [:technologies :Clojure :recommendations 0 :type] "assess"
@@ -164,7 +164,7 @@
      [:technologies :Clojure :recommendations 1 :date] "2012-01-12"}
   
     ; --------------------
-  
+
     ; in
     {:systems {:Discourse {:summary    "Web forums that don’t suck."
                            :links      {:main "https://discourse.org"}
@@ -183,28 +183,41 @@
     [:systems :Discourse :summary]
     "Web forums that don’t suck."
     {:table-name :systems
-     :keys       {:name "Discourse"}
+     :p-keys     {:name "Discourse"}
+     :f-keys     []
      :col-name   :summary
      :val        "Web forums that don’t suck."}
   
     [:systems :Discourse :containers :web :technology]
     "Tomcat"
     {:table-name :systems-containers
-     :keys       {:name "web" :system "Discourse"}
+     :p-keys     {:system "Discourse" :name "web"}
+     :f-keys     [{:this-table-col :system
+                   :f-table-name   :systems
+                   :f-table-col    :name}]
      :col-name   :technology
      :val        "Tomcat"}
     
     [:systems :Discourse :containers :web :tags :regions]
     ["us", "uk"]
     {:table-name :systems-containers-tags
-     :keys       {:name "regions" :system "Discourse" :container "web"}
+     :p-keys     {:system "Discourse" :container "web" :name "regions"}
+     :f-keys     [{:this-table-col :system
+                   :f-table-name   :systems
+                   :f-table-col    :name}
+                  {:this-table-col :container
+                   :f-table-name   :containers
+                   :f-table-col    :name}]
      :col-name   :val
      :val        ["us", "uk"]}
     
     [:technologies :Clojure :recommendations 0 :type]
     "assess"
     {:table-name :technologies-recommendations
-     :keys       {:id 0 :technology "Clojure"}
+     :p-keys     {:technology "Clojure" :id 0}
+     :f-keys     [{:this-table-col :technology
+                   :f-table-name   :technologies
+                   :f-table-col    :name}]
      :col-name   :type
      :val        "assess"}))
 

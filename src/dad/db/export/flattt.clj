@@ -114,17 +114,29 @@
                    :else                   [(conj path k) v])))
         (into {}))))
 
+(defn- key-col-name
+  [key-val]
+  (if (or (number? key-val)
+          (uuid? key-val))
+      :id
+      :name))
+
 (defn- path+value->cell
   [path v]
   (let [kp  path ;[:systems :Discourse :containers :web :technology]
         kpp (partition 2 kp)
-        ; _ (println "kpp:" kpp)
         table  (->> (take-nth 2 (butlast kp))
                     (join-names))
-        keys (->> (map (fn [[k v]] [(singular k) (unkeyword v)]) (butlast kpp))
-                  (into {})
-                  (merge (let [[_k v] (last kpp)]
-                           {(if (number? v) :id :name) (unkeyword v)})))
+        p-keys (->> (butlast kpp)
+                    (map (fn [[table-name key-val]] [(singular table-name) (unkeyword key-val)]))
+                    (into {})
+                    (merge (let [[_ key-val] (last kpp)]
+                             {(key-col-name key-val) (unkeyword v)})))
+        f-keys (->> (butlast kpp)
+                    (map (fn [[table-name key-val]]
+                              {:this-table-col (singular table-name)
+                               :f-table-name   table-name
+                               :f-table-col    (key-col-name key-val)})))
         col-name  (last kp)]
     ; (println "kp:    " kp)
     ; (println "kpp:   " kpp)
@@ -132,9 +144,17 @@
     ; (println "keys:  " keys)
     ; (println "col:   " col)
     {:table-name table
-     :keys keys
+     :p-keys p-keys
+     :f-keys f-keys
      :col-name (if (odd? (count kp)) col-name :val)
      :val v}))
+
+(defn- cell->tables
+  [tables {:keys [table-name p-keys col-name val] :as _cell}]
+  (-> tables
+    (update-in [table-name p-keys] merge {col-name val})
+    
+    ))
 
 (defn db->tables
   [m]
@@ -143,9 +163,7 @@
        (fold-props)
        (pathize)
        (map (fn [[p v]] (path+value->cell p v)))
-       (reduce (fn [r {:keys [table-name keys col-name val]}]
-                 (update-in r [table-name keys] merge {col-name val}))
-               {})))
+       (reduce cell->tables {})))
 
 (defn- ->key-col
   [k]
