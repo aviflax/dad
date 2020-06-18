@@ -40,8 +40,10 @@
     (name v)
     v))
 
+(def ^:private separator "-")
+
 (defn- join-names
-  [separator names]
+  [names]
   (try
     (->> (map unkeyword names)
          (str/join separator)
@@ -85,29 +87,11 @@
         v))
     m))
 
-(defn- flatten-paths
-  {:derived-from "https://andersmurphy.com/2019/11/30/clojure-flattening-key-paths.html"}
-  ([m]
-   (flatten-paths m []))
-  ([m path]
-   (->> (map (fn [[k v]]
-               (if (and (map? v)
-                        (not-empty v)
-                        (not (map? (val (first v)))))
-                 (flatten-paths v (conj path k))
-                 [(conj path k)
-                  (if (and (map? v)
-                           (some-> v first val map?))
-                    (flatten-paths v)
-                    v)]))
-             m)
-        (into {}))))
-
 (defn- kp->tp
   [kp]
   (cond
     (> (count kp) 2)
-    [(first kp) (second kp) (join-names "-" (drop 2 kp))]
+    [(first kp) (second kp) (join-names (drop 2 kp))]
     
     :else
     kp))
@@ -130,13 +114,13 @@
                    :else                   [(conj path k) v])))
         (into {}))))
 
-(defn path+value->cell
+(defn- path+value->cell
   [path v]
   (let [kp  path ;[:systems :Discourse :containers :web :technology]
         kpp (partition 2 kp)
         ; _ (println "kpp:" kpp)
         table  (->> (take-nth 2 (butlast kp))
-                    (join-names "-"))
+                    (join-names))
         keys (->> (map (fn [[k v]] [(singular k) (unkeyword v)]) (butlast kpp))
                   (into {})
                   (merge (let [[_k v] (last kpp)]
@@ -152,13 +136,6 @@
      :col-name (if (odd? (count kp)) col-name :val)
      :val v}))
 
-[:technologies :Kafka :recommendations 0 :type]
-
-(path+value->cell [:systems :Discourse :summary] "Web forums that don’t suck.")
-(path+value->cell [:systems :Discourse :containers :web :technology] "Tomcat")
-(path+value->cell [:systems :Discourse :containers :web :tags :regions] ["us", "uk"])
-(path+value->cell [:technologies :Clojure :recommendations 0 :type] "assess")
-
 (defn db->tables
   [m]
   (->> m
@@ -169,40 +146,6 @@
        (reduce (fn [r {:keys [table-name keys col-name val]}]
                  (update-in r [table-name keys] merge {col-name val}))
                {})))
-
-(->> {:systems {:Discourse {:summary    "Web forums that don’t suck."
-                            :links      {:main "https://discourse.org/"}
-                            :containers {:web   {:summary "web server" :technology "Tomcat"}
-                                         :db    {:summary "db server"  :technology "Access"}
-                                         :cache {:summary "hot keys"   :technology "PHP"}}}}}
-     (db->tables))
-
-(->> {:technologies {:Clojure {:links {:main "https://clojure.org/"}
-                               :recommendations [{:type "assess" :date "2011-09-15"}
-                                                 {:type "adopt"  :date "2012-01-12"}]}}}
-     (db->tables))
-     ; (pathize) (partition 2)
-     ; clojure.pprint/pprint)
-
-(->> {:technologies {:Clojure {:links {:main "https://clojure.org/"}
-                               :recommendations [{:type "assess" :date "2011-09-15"}
-                                                 {:type "adopt"  :date "2012-01-12"}]}}}
-     (db->tables))
-
-
-; (->>
-;   [[:systems :Discourse :summary]
-;    [:systems :Discourse :links :main]
-;    [:systems :Discourse :containers :web :summary]
-;    [:systems :Discourse :containers :web :technology]]
-;   (map kp->tp)
-;   clojure.pprint/pprint)
-
-#_(
-  [:systems :Discourse :containers :web :technology]
-  ->
-  [:systems-containers [:system :Discourse :name :web] :technology])
-
 
 (defn- ->key-col
   [k]
@@ -225,45 +168,47 @@
     (-> (assoc rec-m col-name key-val)
         (with-meta {::columns {col-name {::fk-table-name fk-table-name}}}))))
 
-(def separator "-")
 
-(defn- split-record
-  "Accepts a table name and a single record as either a MapEntry or a two-tuple.
-  Returns a map of table name to maps representing records."
-  [table-name [rec-key rec-m :as _record]]
-  (reduce-kv
-    (fn [r k v]
-      (cond
-        (and (coll? v) (map? v))
-        (assoc r
-              (join-names separator [table-name k])
-              (map-keys #(-> (->key-col %)
-                             (add-fk table-name rec-key)) v))
-        
-        (and (coll? v)
-             (not (map? v))
-             (map? (first v)))
-        (assoc r
-              (join-names separator [table-name k])
-              (map #(add-fk % table-name rec-key) v))
-        
-        :else
-        (assoc-in r [table-name (->key-col rec-key) k] v)))
-    {}
-    rec-m))
 
-(defn recordset->tables
-  "Transforms the recordset into one or more tables. The recordset should be either a MapEntry or a
-  two-tuple. Returns a map."
-  [[rs-name rs-recs :as _recordset]]
-  (->> (keywordize-keys rs-recs)
-       (map-vals fold-props)
-       (map-vals #(flatten-paths % separator))
-       (map #(split-record rs-name %))
-       (reduce dm/deep-mergecat)))
+#_(comment
+  [:technologies :Kafka :recommendations 0 :type]
 
-(defn flatten-db
-  [db]
-  (->> (dissoc db :schemata)
-       (pmap recordset->tables)
-       (reduce merge)))
+  (path+value->cell [:systems :Discourse :summary] "Web forums that don’t suck.")
+  (path+value->cell [:systems :Discourse :containers :web :technology] "Tomcat")
+  (path+value->cell [:systems :Discourse :containers :web :tags :regions] ["us", "uk"])
+  (path+value->cell [:technologies :Clojure :recommendations 0 :type] "assess")
+  
+  
+  (->> {:systems {:Discourse {:summary    "Web forums that don’t suck."
+                              :links      {:main "https://discourse.org/"}
+                              :containers {:web   {:summary "web server" :technology "Tomcat"}
+                                           :db    {:summary "db server"  :technology "Access"}
+                                           :cache {:summary "hot keys"   :technology "PHP"}}}}}
+       (db->tables))
+
+  (->> {:technologies {:Clojure {:links {:main "https://clojure.org/"}
+                                 :recommendations [{:type "assess" :date "2011-09-15"}
+                                                   {:type "adopt"  :date "2012-01-12"}]}}}
+       (db->tables))
+       ; (pathize) (partition 2)
+       ; clojure.pprint/pprint)
+
+  (->> {:technologies {:Clojure {:links {:main "https://clojure.org/"}
+                                 :recommendations [{:type "assess" :date "2011-09-15"}
+                                                   {:type "adopt"  :date "2012-01-12"}]}}}
+       (db->tables))
+
+
+  ; (->>
+  ;   [[:systems :Discourse :summary]
+  ;    [:systems :Discourse :links :main]
+  ;    [:systems :Discourse :containers :web :summary]
+  ;    [:systems :Discourse :containers :web :technology]]
+  ;   (map kp->tp)
+  ;   clojure.pprint/pprint)
+
+  #_(
+    [:systems :Discourse :containers :web :technology]
+    ->
+    [:systems-containers [:system :Discourse :name :web] :technology])
+)
