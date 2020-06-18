@@ -159,7 +159,7 @@
 (path+value->cell [:systems :Discourse :containers :web :tags :regions] ["us", "uk"])
 (path+value->cell [:technologies :Clojure :recommendations 0 :type] "assess")
 
-(defn map->tables
+(defn db->tables
   [m]
   (->> m
        (keywordize-keys)
@@ -175,19 +175,19 @@
                             :containers {:web   {:summary "web server" :technology "Tomcat"}
                                          :db    {:summary "db server"  :technology "Access"}
                                          :cache {:summary "hot keys"   :technology "PHP"}}}}}
-    (map->tables))
+     (db->tables))
 
 (->> {:technologies {:Clojure {:links {:main "https://clojure.org/"}
                                :recommendations [{:type "assess" :date "2011-09-15"}
                                                  {:type "adopt"  :date "2012-01-12"}]}}}
-     (map->tables))
+     (db->tables))
      ; (pathize) (partition 2)
      ; clojure.pprint/pprint)
 
 (->> {:technologies {:Clojure {:links {:main "https://clojure.org/"}
                                :recommendations [{:type "assess" :date "2011-09-15"}
                                                  {:type "adopt"  :date "2012-01-12"}]}}}
-     (map->tables))
+     (db->tables))
 
 
 ; (->>

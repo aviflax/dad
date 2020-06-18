@@ -86,11 +86,11 @@
     ; table-name
     :technologies
     ; record
-    (map-entry "Clojure" {:links-main "https://clojure.org/"
+    (map-entry "Clojure" {:links-main "https://clojure.org"
                           :recommendations [{:type "assess" :date "2011-09-15"}
                                             {:type "adopt"  :date "2012-01-12"}]})
     ; expected
-    {:technologies                 {{:name "Clojure"} {:links-main "https://clojure.org/"}}
+    {:technologies                 {{:name "Clojure"} {:links-main "https://clojure.org"}}
      :technologies-recommendations [{:technology "Clojure" :type "assess" :date "2011-09-15"}
                                     {:technology "Clojure" :type "adopt"  :date "2012-01-12"}]}
 
@@ -99,12 +99,12 @@
     ; table-name
     :systems
     ; record
-    (map-entry "Discourse" {:links-main "https://discourse.org/"
+    (map-entry "Discourse" {:links-main "https://discourse.org"
                             :containers {:web   {:summary "web server" :technology "Tomcat"}
                                          :db    {:summary "db server"  :technology "Access"}
                                          :cache {:summary "hot keys"   :technology "PHP"}}})
     ; expected
-    {:systems            {{:name "Discourse"} {:links-main "https://discourse.org/"}}
+    {:systems            {{:name "Discourse"} {:links-main "https://discourse.org"}}
      :systems-containers {{:system "Discourse" :name "web"}   {:summary "web server" :technology "Tomcat"}
                           {:system "Discourse" :name "db"}    {:summary "db server"  :technology "Access"}
                           {:system "Discourse" :name "cache"} {:summary "hot keys"   :technology "PHP"}}}
@@ -139,7 +139,7 @@
                           {:system "SACLIB" :name "Web"}     {:marathon-ids-kp "/saclib/web"}}})
 
   (let [table-name :technologies
-        record (map-entry "Clojure" {:links-main "https://clojure.org/"
+        record (map-entry "Clojure" {:links-main "https://clojure.org"
                                      :recommendations [{:type "assess" :date "2011-09-15"}
                                                        {:type "adopt"  :date "2012-01-12"}]})
         res (#'f/split-record table-name record)]
@@ -150,13 +150,13 @@
     
     ;; in
     {:systems {:Discourse {:summary    "Web forums that don’t suck."
-                           :links      {:main "https://discourse.org/"}
+                           :links      {:main "https://discourse.org"}
                            :containers {:web   {:summary "web server" :technology "Tomcat"}
                                         :db    {:summary "db server"  :technology "Access"}
                                         :cache {:summary "hot keys"   :technology "PHP"}}}}}
     ;; out
     {:systems            {{:name "Discourse"} {}}
-     :systems-links      {{:system "Discourse" :name "main"}  {:val "https://discourse.org/"}}
+     :systems-links      {{:system "Discourse" :name "main"}  {:val "https://discourse.org"}}
      :systems-containers {{:system "Discourse" :name "web"}   {:summary "web server" :technology "Tomcat"}
                           {:system "Discourse" :name "db"}    {:summary "db server"  :technology "Access"}
                           {:system "Discourse" :name "cache"} {:summary "hot keys"   :technology "PHP"}}}))
@@ -169,11 +169,11 @@
   (are [in expected] (= expected (#'f/pathize in))
   
     ; in
-    {:technologies {:Clojure {:links {:main "https://clojure.org/"}
+    {:technologies {:Clojure {:links {:main "https://clojure.org"}
                               :recommendations [{:type "assess" :date "2011-09-15"}
                                                 {:type "adopt"  :date "2012-01-12"}]}}}
     ; expected
-    {[:technologies :Clojure :links :main]             "https://clojure.org/"
+    {[:technologies :Clojure :links :main]             "https://clojure.org"
      [:technologies :Clojure :recommendations 0 :type] "assess"
      [:technologies :Clojure :recommendations 0 :date] "2011-09-15"
      [:technologies :Clojure :recommendations 1 :type] "adopt"
@@ -183,11 +183,11 @@
   
     ; in
     {:systems {:Discourse {:summary    "Web forums that don’t suck."
-                           :links      {:main "https://discourse.org/"}
+                           :links      {:main "https://discourse.org"}
                            :containers {:web   {:summary "web server" :technology "JRun" :tags {:regions ["us", "uk"]}} :db    {:summary "db server"  :technology "Access"}}}}}
     ; expected
     {[:systems :Discourse :summary]                        "Web forums that don’t suck."
-     [:systems :Discourse :links :main]                    "https://discourse.org/"
+     [:systems :Discourse :links :main]                    "https://discourse.org"
      [:systems :Discourse :containers :web :summary]       "web server"
      [:systems :Discourse :containers :web :technology]    "JRun"
      [:systems :Discourse :containers :web :tags :regions] ["us", "uk"]
@@ -224,45 +224,49 @@
      :col-name   :type
      :val        "assess"}))
 
-
-(deftest map->tables
-  (let [db {:technologies {:Clojure {:links           {:main "https://clojure.org/"}
+(deftest db->tables
+  (let [db {:technologies {:Clojure {:links           {:main "https://clojure.org"}
                                      :props           {:hosted "true"}
                                      :recommendations [{:type "assess" :date "2011-09-15"}
                                                        {:type "adopt" :date "2012-01-12"}]}
-                           :Kafka   {:links           {:main "https://kafka.apache.org/"}
+                           :Crux    {:links           {:main "https://opencrux.com"}}
+                           :Kafka   {:links           {:main "https://kafka.apache.org"}
                                      :recommendations [{:type "assess" :date "2013-12-16"}
                                                        {:type "adopt"  :date "2016-03-03"}]}}
-            :systems      {:Discourse {:links      {:main "https://discourse.org/"}
+            :systems      {:Discourse {:links      {:main "https://discourse.org"}
                                        :containers {:web   {:summary "web server" :technology "Tomcat"}
                                                     :db    {:summary "db server"  :technology "Access"}
                                                     :cache {:summary "hot keys"   :technology "PHP"}}}}}
-        expected {:technologies                 {{:name "Clojure"} {:links-main "https://clojure.org/"
-                                                                    :hosted     "true"}
-                                                 {:name "Kafka"}   {:links-main "https://kafka.apache.org/"}}
+        expected {:technologies                 {{:name "Clojure"} {:hosted "true"}
+                                                 {:name "Crux"}    {}
+                                                 {:name "Kafka"}   {}}
+                  :technologies-links           {{:name "main" :technology "Clojure"} {:val "https://clojure.org"}
+                                                 {:name "main" :technology "Crux"}    {:val "https://opencrux.com"}
+                                                 {:name "main" :technology "Kafka"}   {:val "https://kafka.apache.org"}}
                   :technologies-recommendations [{:technology "Clojure" :type "assess" :date "2011-09-15"}
                                                  {:technology "Clojure" :type "adopt"  :date "2012-01-12"}
                                                  {:technology "Kafka"   :type "assess" :date "2013-12-16"}
                                                  {:technology "Kafka"   :type "adopt"  :date "2016-03-03"}]
-                  :systems                      {{:name "Discourse"} {:links-main "https://discourse.org/"}}
+                  :systems                      {{:name "Discourse"} {}}
+                  :systems-links                {{:name "main" :system "Discourse"} {:val "https://discourse.org/"}}
                   :systems-containers           {{:system "Discourse" :name "web"}   {:summary "web server" :technology "Tomcat"}
                                                  {:system "Discourse" :name "db"}    {:summary "db server"  :technology "Access"}
                                                  {:system "Discourse" :name "cache"} {:summary "hot keys"   :technology "PHP"}}}
-        res (#'f/map->tables db)]
+        res (#'f/db->tables db)]
     (is (= expected res))))
 
 
 ; (deftest recordset->tables
-;   (let [recordset (map-entry :technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
+;   (let [recordset (map-entry :technologies {"Clojure" {"links" {"main" "https://clojure.org"}
 ;                                                        "props" {"hosted" "true"}
 ;                                                        "recommendations" [{"type" "assess" :date "2011-09-15"}
 ;                                                                           {"type" "adopt" :date "2012-01-12"}]}
-;                                             "Kafka"   {"links" {"main" "https://kafka.apache.org/"}
+;                                             "Kafka"   {"links" {"main" "https://kafka.apache.org"}
 ;                                                        "recommendations" [{"type" "assess", "date" "2013-12-16"}
 ;                                                                           {"type" "adopt", "date" "2016-03-03"}]}})
-;         expected {:technologies                 {{:name "Clojure"} {:links-main "https://clojure.org/"
+;         expected {:technologies                 {{:name "Clojure"} {:links-main "https://clojure.org"
 ;                                                                     :hosted     "true"}
-;                                                  {:name "Kafka"}   {:links-main "https://kafka.apache.org/"}}
+;                                                  {:name "Kafka"}   {:links-main "https://kafka.apache.org"}}
 ;                   :technologies-recommendations [{:technology "Clojure" :type "assess" :date "2011-09-15"}
 ;                                                  {:technology "Clojure" :type "adopt"  :date "2012-01-12"}
 ;                                                  {:technology "Kafka"   :type "assess" :date "2013-12-16"}
@@ -274,11 +278,11 @@
 ;       (is (= {::f/columns {:technology {::f/fk-table-name :technologies}}}
 ;              (meta row)))))
 ;
-;   (let [recordset (map-entry :systems {"Discourse" {"links" {"main" "https://discourse.org/"}
+;   (let [recordset (map-entry :systems {"Discourse" {"links" {"main" "https://discourse.org"}
 ;                                                     "containers" {"web"   {"summary" "web server", "technology" "Tomcat"}
 ;                                                                   "db"    {"summary" "db server",  "technology" "Access"}
 ;                                                                   "cache" {"summary" "hot keys",   "technology" "PHP"}}}})
-;         expected  {:systems            {{:name "Discourse"} {:links-main "https://discourse.org/"}}
+;         expected  {:systems            {{:name "Discourse"} {:links-main "https://discourse.org"}}
 ;                    :systems-containers {{:system "Discourse" :name "web"}   {:summary "web server" :technology "Tomcat"}
 ;                                         {:system "Discourse" :name "db"}    {:summary "db server"  :technology "Access"}
 ;                                         {:system "Discourse" :name "cache"} {:summary "hot keys"   :technology "PHP"}}}
@@ -291,25 +295,25 @@
 ;              ))
 
 ; (deftest flatten-db
-;   (let [db {:technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
+;   (let [db {:technologies {"Clojure" {"links" {"main" "https://clojure.org"}
 ;                                                        "props" {"hosted" "true"}
 ;                                                        "recommendations" [{"type" "assess", "date" "2011-09-15"}
 ;                                                                           {"type" "adopt", "date" "2012-01-12"}]}
-;                            "Kafka"   {"links" {"main" "https://kafka.apache.org/"}
+;                            "Kafka"   {"links" {"main" "https://kafka.apache.org"}
 ;                                       "recommendations" [{"type" "assess", "date" "2013-12-16"}
 ;                                                          {"type" "adopt", "date" "2016-03-03"}]}}
-;             :systems {"Discourse" {"links" {"main" "https://discourse.org/"}
+;             :systems {"Discourse" {"links" {"main" "https://discourse.org"}
 ;                                    "containers" {"web"   {"summary" "web server", "technology" "Tomcat"}
 ;                                                  "db"    {"summary" "db server",  "technology" "Access"}
 ;                                                  "cache" {"summary" "hot keys",   "technology" "PHP"}}}}}
-;         expected {:technologies                 {{:name "Clojure"} {:links-main "https://clojure.org/"
+;         expected {:technologies                 {{:name "Clojure"} {:links-main "https://clojure.org"
 ;                                                                     :hosted     "true"}
-;                                                  {:name "Kafka"}   {:links-main "https://kafka.apache.org/"}}
+;                                                  {:name "Kafka"}   {:links-main "https://kafka.apache.org"}}
 ;                   :technologies-recommendations [{:technology "Clojure" :type "assess" :date "2011-09-15"}
 ;                                                  {:technology "Clojure" :type "adopt"  :date "2012-01-12"}
 ;                                                  {:technology "Kafka"   :type "assess" :date "2013-12-16"}
 ;                                                  {:technology "Kafka"   :type "adopt"  :date "2016-03-03"}]
-;                   :systems                      {{:name "Discourse"} {:links-main "https://discourse.org/"}}
+;                   :systems                      {{:name "Discourse"} {:links-main "https://discourse.org"}}
 ;                   :systems-containers           {{:system "Discourse" :name "web"}   {:summary "web server" :technology "Tomcat"}
 ;                                                  {:system "Discourse" :name "db"}    {:summary "db server"  :technology "Access"}
 ;                                                  {:system "Discourse" :name "cache"} {:summary "hot keys"   :technology "PHP"}}}
