@@ -186,64 +186,69 @@
     [{:type "assess" :date "2011-09-15"}
      {:type "adopt"  :date "2012-01-12"}]
     [{:table-name :technologies-recommendations
-      :p-keys     {:id *}
-      :f-keys     {:technology "Clojure"}
-      :cols       {:type "assess" :date "2011-09-15"}}
-     {:table-name :technologies-recommendations
-       :p-keys     {:id *}
-       :f-keys     {:technology "Clojure"}
-       :cols       {:type "adopt"  :date "2012-01-12"}}]
-
-    [:systems :Discourse :summary]
-    "Web forums that don’t suck."
-    [{:table-name :systems
-      :p-keys     {:name "Discourse"}
-      :f-keys     {}
-      :col-name   :summary
-      :val        "Web forums that don’t suck."}]
-  
-    [:systems :Discourse :links :main]
-    "https://discourse.org"
-    [{:table-name :systems-links
-      :p-keys     {:name "main" :system "Discourse"}
-      :f-keys     [{:this-table-col :system
-                    :f-table-name   :systems
-                    :f-table-col    :name}]
-      :col-name   :val
-      :val        "https://discourse.org"}]
-  
-    [:systems :Discourse :containers :web :technology]
-    "Tomcat"
-    [{:table-name :systems-containers
-      :p-keys     {:name "web" :system "Discourse"}
-      :f-keys     [{:this-table-col :system
-                    :f-table-name   :systems
-                    :f-table-col    :name}]
-      :col-name   :technology
-      :val        "Tomcat"}]
-    
-    [:systems :Discourse :containers :web :tags :regions]
-    ["us", "uk"]
-    [{:table-name :systems-containers-tags
-      :p-keys     {:system "Discourse" :container "web" :name "regions"}
-      :f-keys     [{:this-table-col :system
-                    :f-table-name   :systems
-                    :f-table-col    :name}
-                   {:this-table-col :container
-                    :f-table-name   :containers
-                    :f-table-col    :name}]
-      :col-name   :val
-      :val        ["us", "uk"]}]
-    
-    [:technologies :Clojure :recommendations 0 :type]
-    "assess"
-    [{:table-name :technologies-recommendations
-      :p-keys     {:technology "Clojure" :id 0}
+      :p-keys     []
       :f-keys     [{:this-table-col :technology
                     :f-table-name   :technologies
                     :f-table-col    :name}]
-      :col-name   :type
-      :val        "assess"}]))
+      :cols       {:technology "Clojure" :type "assess" :date "2011-09-15"}}
+     {:table-name :technologies-recommendations
+       :p-keys     []
+       :f-keys     [{:this-table-col :technology
+                     :f-table-name   :technologies
+                     :f-table-col    :name}]
+       :cols       {:technology "Clojure" :type "adopt"  :date "2012-01-12"}}]
+
+    ; [:systems :Discourse :summary]
+    ; "Web forums that don’t suck."
+    ; [{:table-name :systems
+    ;   :p-keys     {:name "Discourse"}
+    ;   :f-keys     {}
+    ;   :col-name   :summary
+    ;   :val        "Web forums that don’t suck."}]
+    ;
+    ; [:systems :Discourse :links :main]
+    ; "https://discourse.org"
+    ; [{:table-name :systems-links
+    ;   :p-keys     {:name "main" :system "Discourse"}
+    ;   :f-keys     [{:this-table-col :system
+    ;                 :f-table-name   :systems
+    ;                 :f-table-col    :name}]
+    ;   :col-name   :val
+    ;   :val        "https://discourse.org"}]
+    ;
+    ; [:systems :Discourse :containers :web :technology]
+    ; "Tomcat"
+    ; [{:table-name :systems-containers
+    ;   :p-keys     {:name "web" :system "Discourse"}
+    ;   :f-keys     [{:this-table-col :system
+    ;                 :f-table-name   :systems
+    ;                 :f-table-col    :name}]
+    ;   :col-name   :technology
+    ;   :val        "Tomcat"}]
+    ;
+    ; [:systems :Discourse :containers :web :tags :regions]
+    ; ["us", "uk"]
+    ; [{:table-name :systems-containers-tags
+    ;   :p-keys     {:system "Discourse" :container "web" :name "regions"}
+    ;   :f-keys     [{:this-table-col :system
+    ;                 :f-table-name   :systems
+    ;                 :f-table-col    :name}
+    ;                {:this-table-col :container
+    ;                 :f-table-name   :containers
+    ;                 :f-table-col    :name}]
+    ;   :col-name   :val
+    ;   :val        ["us", "uk"]}]
+    ;
+    ; [:technologies :Clojure :recommendations 0 :type]
+    ; "assess"
+    ; [{:table-name :technologies-recommendations
+    ;   :p-keys     {:technology "Clojure" :id 0}
+    ;   :f-keys     [{:this-table-col :technology
+    ;                 :f-table-name   :technologies
+    ;                 :f-table-col    :name}]
+    ;   :col-name   :type
+    ;   :val        "assess"}]
+    ))
 
 (deftest db->tables
   (let [db {:technologies {:Clojure {:links           {:main "https://clojure.org"}
@@ -275,7 +280,8 @@
                                                  {:system "Discourse" :name "cache"} {:summary "hot keys"   :technology "PHP"}}}
         res (#'f/db->tables db)]
     (is (= expected res))
-    (is (s/valid? ::f/tables res) (s/explain-str ::f/tables res))
-    (doseq [row (:technologies-recommendations res)]
-      (is (= {::f/columns {:technology {::f/fk-table-name :technologies}}}
-             (meta row))))))
+    ; (is (s/valid? ::f/tables res) (s/explain-str ::f/tables res))
+    ; (doseq [row (:technologies-recommendations res)]
+    ;   (is (= {::f/columns {:technology {::f/fk-table-name :technologies}}}
+    ;          (meta row))))
+             ))

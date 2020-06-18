@@ -125,14 +125,18 @@
   [path v]
   (let [kp  path ;[:systems :Discourse :containers :web :technology]
         kpp (partition 2 kp)
-        table  (->> (take-nth 2 (butlast kp))
-                    (join-names))
+        table  (-> (if (sequential? v)
+                     (take-nth 2 kp)
+                     (take-nth 2 (butlast kp)))
+                   (join-names))
         p-keys (->> (butlast kpp)
                     (map (fn [[table-name key-val]] [(singular table-name) (unkeyword key-val)]))
                     (into {})
                     (merge (let [[_ key-val] (last kpp)]
                              {(key-col-name key-val) (unkeyword key-val)})))
-        f-keys (->> (butlast kpp)
+        f-keys (->> (if (even? (count kp))
+                      (butlast kpp)
+                      kpp)
                     (map (fn [[table-name key-val]]
                               {:this-table-col (singular table-name)
                                :f-table-name   table-name
@@ -143,30 +147,36 @@
     ; (println "table: " table)
     ; (println "keys:  " keys)
     ; (println "col:   " col)
-    (if (and (coll? v)
-             (not (map? v))
+    (if (and (sequential? v)
              (map? (first v)))
-      (mapcat (fn [row]
-                (map (fn [[ck cv]]
-                       {:table-name table
-                        :p-keys [] ; p-keys
-                       :f-keys f-keys
-                        :col-name ck
-                        :val cv})
-                     row))
+      (map (fn [row]
+             {:table-name table
+              :p-keys [] ; p-keys
+              :f-keys f-keys
+              :cols row})
            v)
       [{:table-name table
         :p-keys p-keys
         :f-keys f-keys
-        :col-name (if (odd? (count kp)) col-name :val)
-        :val v}])))
+        :cols {(if (odd? (count kp)) col-name :val) v}}])))
 
-(defn- cell->tables
-  [tables {:keys [table-name p-keys col-name val] :as _cell}]
-  (-> tables
-    (update-in [table-name p-keys] merge {col-name val})
-    
-    ))
+(defn- path+val->tables
+  [tables [path v]]
+  (let [kpp   (partition 2 path)
+        table-name (->> (if (sequential? v)
+                          path
+                          (butlast path))
+                   (take-nth 2)
+                   (join-names))
+        p-keys (->> (butlast kpp)
+                    (map (fn [[table-name key-val]] [(singular table-name) (unkeyword key-val)]))
+                    (into {})
+                    (merge (let [[_ key-val] (last kpp)]
+                             {(key-col-name key-val) (unkeyword key-val)})))
+        col-name  (if (odd? (count path))
+                    (last path)
+                    :val)]
+    (-> (update-in tables [table-name p-keys] merge {col-name v}))))
 
 (defn db->tables
   [m]
@@ -174,8 +184,7 @@
        (keywordize-keys)
        (fold-props)
        (pathize)
-       (map (fn [[p v]] (path+value->cells p v)))
-       (reduce cell->tables {})))
+       (reduce path+val->tables {})))
 
 (defn- ->key-col
   [k]
@@ -241,4 +250,8 @@
     [:systems :Discourse :containers :web :technology]
     ->
     [:systems-containers [:system :Discourse :name :web] :technology])
+
+
+(->> [:technologies :Clojure :recommendations] (partition 2))
+
 )
