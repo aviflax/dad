@@ -4,7 +4,8 @@
             [clojure.test :refer [deftest is are]]
             [dad.db.export.flattt :as f]
             [expound.alpha :as expound]
-            [medley.core :as mc :refer [map-entry]]))
+            [medley.core :as mc :refer [map-entry]])
+  (:refer-clojure :exclude [*]))
 
 ; See https://github.com/bhb/expound#printer-options
 (set! s/*explain-out* (expound/custom-printer {:print-specs? false}))
@@ -157,11 +158,9 @@
                                                 {:type "adopt"  :date "2012-01-12"}]}}}
     
     ; expected
-    {[:technologies :Clojure :links :main]             "https://clojure.org"
-     [:technologies :Clojure :recommendations 0 :type] "assess"
-     [:technologies :Clojure :recommendations 0 :date] "2011-09-15"
-     [:technologies :Clojure :recommendations 1 :type] "adopt"
-     [:technologies :Clojure :recommendations 1 :date] "2012-01-12"}
+    {[:technologies :Clojure :links :main]     "https://clojure.org"
+     [:technologies :Clojure :recommendations] [{:type "assess" :date "2011-09-15"}
+                                                {:type "adopt"  :date "2012-01-12"}]}
   
     ; --------------------
 
@@ -178,58 +177,73 @@
      [:systems :Discourse :containers :db :summary]        "db server"
      [:systems :Discourse :containers :db :technology]     "Access"}))
 
-(deftest path+value->cell
-  (are [path v expected] (= expected (#'f/path+value->cell path v))
+(def *
+  (proxy [Object] [] (equals [o] true)))
+
+(deftest path+value->rows
+  (are [path v expected] (= expected (#'f/path+value->rows path v))
+    [:technologies :Clojure :recommendations]
+    [{:type "assess" :date "2011-09-15"}
+     {:type "adopt"  :date "2012-01-12"}]
+    [{:table-name :technologies-recommendations
+      :p-keys     {:id *}
+      :f-keys     {:technology "Clojure"}
+      :cols       {:type "assess" :date "2011-09-15"}}
+     {:table-name :technologies-recommendations
+       :p-keys     {:id *}
+       :f-keys     {:technology "Clojure"}
+       :cols       {:type "adopt"  :date "2012-01-12"}}]
+
     [:systems :Discourse :summary]
     "Web forums that don’t suck."
-    {:table-name :systems
-     :p-keys     {:name "Discourse"}
-     :f-keys     []
-     :col-name   :summary
-     :val        "Web forums that don’t suck."}
+    [{:table-name :systems
+      :p-keys     {:name "Discourse"}
+      :f-keys     {}
+      :col-name   :summary
+      :val        "Web forums that don’t suck."}]
   
     [:systems :Discourse :links :main]
     "https://discourse.org"
-    {:table-name :systems-links
-     :p-keys     {:name "main" :system "Discourse"}
-     :f-keys     [{:this-table-col :system
-                   :f-table-name   :systems
-                   :f-table-col    :name}]
-     :col-name   :val
-     :val        "https://discourse.org"}
+    [{:table-name :systems-links
+      :p-keys     {:name "main" :system "Discourse"}
+      :f-keys     [{:this-table-col :system
+                    :f-table-name   :systems
+                    :f-table-col    :name}]
+      :col-name   :val
+      :val        "https://discourse.org"}]
   
     [:systems :Discourse :containers :web :technology]
     "Tomcat"
-    {:table-name :systems-containers
-     :p-keys     {:name "web" :system "Discourse"}
-     :f-keys     [{:this-table-col :system
-                   :f-table-name   :systems
-                   :f-table-col    :name}]
-     :col-name   :technology
-     :val        "Tomcat"}
+    [{:table-name :systems-containers
+      :p-keys     {:name "web" :system "Discourse"}
+      :f-keys     [{:this-table-col :system
+                    :f-table-name   :systems
+                    :f-table-col    :name}]
+      :col-name   :technology
+      :val        "Tomcat"}]
     
     [:systems :Discourse :containers :web :tags :regions]
     ["us", "uk"]
-    {:table-name :systems-containers-tags
-     :p-keys     {:system "Discourse" :container "web" :name "regions"}
-     :f-keys     [{:this-table-col :system
-                   :f-table-name   :systems
-                   :f-table-col    :name}
-                  {:this-table-col :container
-                   :f-table-name   :containers
-                   :f-table-col    :name}]
-     :col-name   :val
-     :val        ["us", "uk"]}
+    [{:table-name :systems-containers-tags
+      :p-keys     {:system "Discourse" :container "web" :name "regions"}
+      :f-keys     [{:this-table-col :system
+                    :f-table-name   :systems
+                    :f-table-col    :name}
+                   {:this-table-col :container
+                    :f-table-name   :containers
+                    :f-table-col    :name}]
+      :col-name   :val
+      :val        ["us", "uk"]}]
     
     [:technologies :Clojure :recommendations 0 :type]
     "assess"
-    {:table-name :technologies-recommendations
-     :p-keys     {:technology "Clojure" :id 0}
-     :f-keys     [{:this-table-col :technology
-                   :f-table-name   :technologies
-                   :f-table-col    :name}]
-     :col-name   :type
-     :val        "assess"}))
+    [{:table-name :technologies-recommendations
+      :p-keys     {:technology "Clojure" :id 0}
+      :f-keys     [{:this-table-col :technology
+                    :f-table-name   :technologies
+                    :f-table-col    :name}]
+      :col-name   :type
+      :val        "assess"}]))
 
 (deftest db->tables
   (let [db {:technologies {:Clojure {:links           {:main "https://clojure.org"}
@@ -250,10 +264,10 @@
                   :technologies-links           {{:name "main" :technology "Clojure"} {:val "https://clojure.org"}
                                                  {:name "main" :technology "Crux"}    {:val "https://opencrux.com"}
                                                  {:name "main" :technology "Kafka"}   {:val "https://kafka.apache.org"}}
-                  :technologies-recommendations [{:technology "Clojure" :type "assess" :date "2011-09-15"}
-                                                 {:technology "Clojure" :type "adopt"  :date "2012-01-12"}
-                                                 {:technology "Kafka"   :type "assess" :date "2013-12-16"}
-                                                 {:technology "Kafka"   :type "adopt"  :date "2016-03-03"}]
+                  :technologies-recommendations {{:id 0 :technology "Clojure"} {:type "assess" :date "2011-09-15"}
+                                                 {:id 1 :technology "Clojure"} {:type "adopt"  :date "2012-01-12"}
+                                                 {:id 0 :technology "Kafka"}   {:type "assess" :date "2013-12-16"}
+                                                 {:id 1 :technology "Kafka"}   {:type "adopt"  :date "2016-03-03"}}
                   :systems                      {{:name "Discourse"} {}}
                   :systems-links                {{:name "main" :system "Discourse"} {:val "https://discourse.org"}}
                   :systems-containers           {{:system "Discourse" :name "web"}   {:summary "web server" :technology "Tomcat"}

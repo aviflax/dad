@@ -107,10 +107,10 @@
                  ; (println "key:" k "\n" "val:" v "\n\n\n")
                  (cond
                    (and (map? v) (seq v))  (pathize v (conj path k))
-                   (and (not (map? v))
-                        (coll? v)
-                        (map? (first v)))  (->> (map-indexed (fn [i v] (pathize v (conj path k i))) v)
-                                                (apply concat))
+                   ; (and (not (map? v))
+                   ;      (coll? v)
+                   ;      (map? (first v)))  (->> (map-indexed (fn [i v] (pathize v (conj path (join-names [k i])))) v)
+                   ;                              (apply concat))
                    :else                   [(conj path k) v])))
         (into {}))))
 
@@ -121,7 +121,7 @@
       :id
       :name))
 
-(defn- path+value->cell
+(defn- path+value->rows
   [path v]
   (let [kp  path ;[:systems :Discourse :containers :web :technology]
         kpp (partition 2 kp)
@@ -143,11 +143,23 @@
     ; (println "table: " table)
     ; (println "keys:  " keys)
     ; (println "col:   " col)
-    {:table-name table
-     :p-keys p-keys
-     :f-keys f-keys
-     :col-name (if (odd? (count kp)) col-name :val)
-     :val v}))
+    (if (and (coll? v)
+             (not (map? v))
+             (map? (first v)))
+      (mapcat (fn [row]
+                (map (fn [[ck cv]]
+                       {:table-name table
+                        :p-keys [] ; p-keys
+                       :f-keys f-keys
+                        :col-name ck
+                        :val cv})
+                     row))
+           v)
+      [{:table-name table
+        :p-keys p-keys
+        :f-keys f-keys
+        :col-name (if (odd? (count kp)) col-name :val)
+        :val v}])))
 
 (defn- cell->tables
   [tables {:keys [table-name p-keys col-name val] :as _cell}]
@@ -162,7 +174,7 @@
        (keywordize-keys)
        (fold-props)
        (pathize)
-       (map (fn [[p v]] (path+value->cell p v)))
+       (map (fn [[p v]] (path+value->cells p v)))
        (reduce cell->tables {})))
 
 (defn- ->key-col
