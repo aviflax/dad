@@ -161,6 +161,72 @@
                           {:system "Discourse" :name "db"}    {:summary "db server"  :technology "Access"}
                           {:system "Discourse" :name "cache"} {:summary "hot keys"   :technology "PHP"}}}))
 
+
+
+
+
+(deftest pathize
+  (are [in expected] (= expected (#'f/pathize in))
+  
+    ; in
+    {:technologies {:Clojure {:links {:main "https://clojure.org/"}
+                              :recommendations [{:type "assess" :date "2011-09-15"}
+                                                {:type "adopt"  :date "2012-01-12"}]}}}
+    ; expected
+    {[:technologies :Clojure :links :main]             "https://clojure.org/"
+     [:technologies :Clojure :recommendations 0 :type] "assess"
+     [:technologies :Clojure :recommendations 0 :date] "2011-09-15"
+     [:technologies :Clojure :recommendations 1 :type] "adopt"
+     [:technologies :Clojure :recommendations 1 :date] "2012-01-12"}
+  
+    ; --------------------
+  
+    ; in
+    {:systems {:Discourse {:summary    "Web forums that don’t suck."
+                           :links      {:main "https://discourse.org/"}
+                           :containers {:web   {:summary "web server" :technology "JRun" :tags {:regions ["us", "uk"]}}
+                                        :db    {:summary "db server"  :technology "Access"}}}}}
+    ; expected
+    {[:systems :Discourse :summary]                        "Web forums that don’t suck."
+     [:systems :Discourse :links :main]                    "https://discourse.org/"
+     [:systems :Discourse :containers :web :summary]       "web server"
+     [:systems :Discourse :containers :web :technology]    "JRun"
+     [:systems :Discourse :containers :web :tags :regions] ["us", "uk"]
+     [:systems :Discourse :containers :db :summary]        "db server"
+     [:systems :Discourse :containers :db :technology]     "Access"}))
+
+(deftest path+value->cell
+  (are [path v expected] (= expected (#'f/path+value->cell path v))
+    [:systems :Discourse :summary]
+    "Web forums that don’t suck."
+    {:table-name :systems
+     :keys       {:name "Discourse"}
+     :col-name   :summary
+     :val        "Web forums that don’t suck."}
+  
+    [:systems :Discourse :containers :web :technology]
+    "Tomcat"
+    {:table-name :systems-containers
+     :keys       {:name "web" :system "Discourse"}
+     :col-name   :technology
+     :val        "Tomcat"}
+    
+    [:systems :Discourse :containers :web :tags :regions]
+    ["us", "uk"]
+    {:table-name :systems-containers-tags
+     :keys       {:name "regions" :system "Discourse" :container "web"}
+     :col-name   :val
+     :val        ["us", "uk"]}
+    
+    [:technologies :Clojure :recommendations 0 :type]
+    "assess"
+    {:table-name :technologies-recommendations
+     :keys       {:id 0 :technology "Clojure"}
+     :col-name   :type
+     :val        "assess"}))
+
+
+
 (deftest recordset->tables
   (let [recordset (map-entry :technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
                                                        "props" {"hosted" "true"}

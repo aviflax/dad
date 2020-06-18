@@ -108,16 +108,17 @@
    (pathize m []))
   ([m path]
    ; (println "map:" m "\npath:" path "\n\n")
-   (mapcat (fn [[k v]]
-             ; (println "key:" k "\n" "val:" v "\n\n\n")
-             (cond
-               (and (map? v) (seq v))  (pathize v (conj path k))
-               (and (not (map? v))
-                    (coll? v)
-                    (map? (first v)))  (->> (map-indexed (fn [i v] (pathize v (conj path k i))) v)
-                                            (apply concat))
-               :else                   [(conj path k) v]))
-           m)))
+   (->> m
+       (map (fn [[k v]]
+                 ; (println "key:" k "\n" "val:" v "\n\n\n")
+                 (cond
+                   (and (map? v) (seq v))  (pathize v (conj path k))
+                   (and (not (map? v))
+                        (coll? v)
+                        (map? (first v)))  (->> (map-indexed (fn [i v] (pathize v (conj path k i))) v)
+                                                (apply concat))
+                   :else                   [(conj path k) v])))
+        (into {}))))
 
 (defn- val->key-val
   [v]
@@ -129,7 +130,7 @@
   [path v]
   (let [kp  path ;[:systems :Discourse :containers :web :technology]
         kpp (partition 2 kp)
-        _ (println "kpp:" kpp)
+        ; _ (println "kpp:" kpp)
         table  (->> (take-nth 2 (butlast kp))
                     (join-names "-"))
         keys (->> (map (fn [[k v]] [(singular k) (val->key-val v)]) (butlast kpp))
