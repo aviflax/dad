@@ -131,7 +131,7 @@
                     (map (fn [[table-name key-val]] [(singular table-name) (unkeyword key-val)]))
                     (into {})
                     (merge (let [[_ key-val] (last kpp)]
-                             {(key-col-name key-val) (unkeyword v)})))
+                             {(key-col-name key-val) (unkeyword key-val)})))
         f-keys (->> (butlast kpp)
                     (map (fn [[table-name key-val]]
                               {:this-table-col (singular table-name)
