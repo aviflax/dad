@@ -5,7 +5,7 @@
   (:require [clojure.string :as str]
             [clojure.spec.alpha :as s]
             [clojure.spec.gen.alpha :as gen]
-            [clojure.walk :as walk :refer [postwalk]]
+            [clojure.walk :as walk :refer [keywordize-keys postwalk]]
             [dad.medley :as dm]
             [inflections.core :refer [singular]]
             [medley.core :as mc :refer [map-keys map-vals]]))
@@ -34,11 +34,21 @@
                                           :unkeyed ::unkeyed-rows)
                                     :gen-max 10))
 
+(defn- unkeyword
+  [v]
+  (if (keyword? v)
+    (name v)
+    v))
+
 (defn- join-names
   [separator names]
-  (->> (map name names)
-       (str/join separator)
-       (keyword)))
+  (try
+    (->> (map unkeyword names)
+         (str/join separator)
+         (keyword))
+    (catch Exception e
+      (println names)
+      (throw e))))
 
 ;; This is used only for testing.
 (s/def ::simple-test-map
@@ -120,12 +130,6 @@
                    :else                   [(conj path k) v])))
         (into {}))))
 
-(defn- val->key-val
-  [v]
-  (if (keyword? v)
-    (name v)
-    v))
-
 (defn path+value->cell
   [path v]
   (let [kp  path ;[:systems :Discourse :containers :web :technology]
@@ -133,10 +137,10 @@
         ; _ (println "kpp:" kpp)
         table  (->> (take-nth 2 (butlast kp))
                     (join-names "-"))
-        keys (->> (map (fn [[k v]] [(singular k) (val->key-val v)]) (butlast kpp))
+        keys (->> (map (fn [[k v]] [(singular k) (unkeyword v)]) (butlast kpp))
                   (into {})
                   (merge (let [[_k v] (last kpp)]
-                           {(if (number? v) :id :name) (val->key-val v)})))
+                           {(if (number? v) :id :name) (unkeyword v)})))
         col-name  (last kp)]
     ; (println "kp:    " kp)
     ; (println "kpp:   " kpp)
@@ -148,6 +152,7 @@
      :col-name (if (odd? (count kp)) col-name :val)
      :val v}))
 
+[:technologies :Kafka :recommendations 0 :type]
 
 (path+value->cell [:systems :Discourse :summary] "Web forums that don’t suck.")
 (path+value->cell [:systems :Discourse :containers :web :technology] "Tomcat")
@@ -156,9 +161,14 @@
 
 (defn map->tables
   [m]
-  (->> (pathize m)
-       (partition 2)
-       (map (fn [[p v]] (path+value->cell p v)))))
+  (->> m
+       (keywordize-keys)
+       (fold-props)
+       (pathize)
+       (map (fn [[p v]] (path+value->cell p v)))
+       (reduce (fn [r {:keys [table-name keys col-name val]}]
+                 (update-in r [table-name keys] merge {col-name val}))
+               {})))
 
 (->> {:systems {:Discourse {:summary    "Web forums that don’t suck."
                             :links      {:main "https://discourse.org/"}
@@ -246,7 +256,7 @@
   "Transforms the recordset into one or more tables. The recordset should be either a MapEntry or a
   two-tuple. Returns a map."
   [[rs-name rs-recs :as _recordset]]
-  (->> (walk/keywordize-keys rs-recs)
+  (->> (keywordize-keys rs-recs)
        (map-vals fold-props)
        (map-vals #(flatten-paths % separator))
        (map #(split-record rs-name %))

@@ -184,8 +184,7 @@
     ; in
     {:systems {:Discourse {:summary    "Web forums that don’t suck."
                            :links      {:main "https://discourse.org/"}
-                           :containers {:web   {:summary "web server" :technology "JRun" :tags {:regions ["us", "uk"]}}
-                                        :db    {:summary "db server"  :technology "Access"}}}}}
+                           :containers {:web   {:summary "web server" :technology "JRun" :tags {:regions ["us", "uk"]}} :db    {:summary "db server"  :technology "Access"}}}}}
     ; expected
     {[:systems :Discourse :summary]                        "Web forums that don’t suck."
      [:systems :Discourse :links :main]                    "https://discourse.org/"
@@ -226,57 +225,18 @@
      :val        "assess"}))
 
 
-
-(deftest recordset->tables
-  (let [recordset (map-entry :technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
-                                                       "props" {"hosted" "true"}
-                                                       "recommendations" [{"type" "assess", "date" "2011-09-15"}
-                                                                          {"type" "adopt", "date" "2012-01-12"}]}
-                                            "Kafka"   {"links" {"main" "https://kafka.apache.org/"}
-                                                       "recommendations" [{"type" "assess", "date" "2013-12-16"}
-                                                                          {"type" "adopt", "date" "2016-03-03"}]}})
-        expected {:technologies                 {{:name "Clojure"} {:links-main "https://clojure.org/"
-                                                                    :hosted     "true"}
-                                                 {:name "Kafka"}   {:links-main "https://kafka.apache.org/"}}
-                  :technologies-recommendations [{:technology "Clojure" :type "assess" :date "2011-09-15"}
-                                                 {:technology "Clojure" :type "adopt"  :date "2012-01-12"}
-                                                 {:technology "Kafka"   :type "assess" :date "2013-12-16"}
-                                                 {:technology "Kafka"   :type "adopt"  :date "2016-03-03"}]}
-        res (#'f/recordset->tables recordset)]
-    (is (= expected res))
-    (is (s/valid? ::f/tables res) (s/explain-str ::f/tables res))
-    (doseq [row (:technologies-recommendations res)]
-      (is (= {::f/columns {:technology {::f/fk-table-name :technologies}}}
-             (meta row)))))
-  
-  (let [recordset (map-entry :systems {"Discourse" {"links" {"main" "https://discourse.org/"}
-                                                    "containers" {"web"   {"summary" "web server", "technology" "Tomcat"}
-                                                                  "db"    {"summary" "db server",  "technology" "Access"}
-                                                                  "cache" {"summary" "hot keys",   "technology" "PHP"}}}})
-        expected  {:systems            {{:name "Discourse"} {:links-main "https://discourse.org/"}}
-                   :systems-containers {{:system "Discourse" :name "web"}   {:summary "web server" :technology "Tomcat"}
-                                        {:system "Discourse" :name "db"}    {:summary "db server"  :technology "Access"}
-                                        {:system "Discourse" :name "cache"} {:summary "hot keys"   :technology "PHP"}}}
-        res (#'f/recordset->tables recordset)]
-    (is (= expected res))
-    ; (is (s/valid? ::f/tables res) (s/explain-str ::f/tables res))
-    ; (doseq [row (:systems-containers res)]
-    ;   (is (= {::f/columns {:technology {::f/fk-table-name :systems}}}
-    ;          (meta row))))
-             ))
-
-(deftest flatten-db
-  (let [db {:technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
-                                                       "props" {"hosted" "true"}
-                                                       "recommendations" [{"type" "assess", "date" "2011-09-15"}
-                                                                          {"type" "adopt", "date" "2012-01-12"}]}
-                           "Kafka"   {"links" {"main" "https://kafka.apache.org/"}
-                                      "recommendations" [{"type" "assess", "date" "2013-12-16"}
-                                                         {"type" "adopt", "date" "2016-03-03"}]}}
-            :systems {"Discourse" {"links" {"main" "https://discourse.org/"}
-                                   "containers" {"web"   {"summary" "web server", "technology" "Tomcat"}
-                                                 "db"    {"summary" "db server",  "technology" "Access"}
-                                                 "cache" {"summary" "hot keys",   "technology" "PHP"}}}}}
+(deftest map->tables
+  (let [db {:technologies {:Clojure {:links           {:main "https://clojure.org/"}
+                                     :props           {:hosted "true"}
+                                     :recommendations [{:type "assess" :date "2011-09-15"}
+                                                       {:type "adopt" :date "2012-01-12"}]}
+                           :Kafka   {:links           {:main "https://kafka.apache.org/"}
+                                     :recommendations [{:type "assess" :date "2013-12-16"}
+                                                       {:type "adopt"  :date "2016-03-03"}]}}
+            :systems      {:Discourse {:links      {:main "https://discourse.org/"}
+                                       :containers {:web   {:summary "web server" :technology "Tomcat"}
+                                                    :db    {:summary "db server"  :technology "Access"}
+                                                    :cache {:summary "hot keys"   :technology "PHP"}}}}}
         expected {:technologies                 {{:name "Clojure"} {:links-main "https://clojure.org/"
                                                                     :hosted     "true"}
                                                  {:name "Kafka"}   {:links-main "https://kafka.apache.org/"}}
@@ -288,5 +248,70 @@
                   :systems-containers           {{:system "Discourse" :name "web"}   {:summary "web server" :technology "Tomcat"}
                                                  {:system "Discourse" :name "db"}    {:summary "db server"  :technology "Access"}
                                                  {:system "Discourse" :name "cache"} {:summary "hot keys"   :technology "PHP"}}}
-        res (#'f/flatten-db db)]
+        res (#'f/map->tables db)]
     (is (= expected res))))
+
+
+; (deftest recordset->tables
+;   (let [recordset (map-entry :technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
+;                                                        "props" {"hosted" "true"}
+;                                                        "recommendations" [{"type" "assess" :date "2011-09-15"}
+;                                                                           {"type" "adopt" :date "2012-01-12"}]}
+;                                             "Kafka"   {"links" {"main" "https://kafka.apache.org/"}
+;                                                        "recommendations" [{"type" "assess", "date" "2013-12-16"}
+;                                                                           {"type" "adopt", "date" "2016-03-03"}]}})
+;         expected {:technologies                 {{:name "Clojure"} {:links-main "https://clojure.org/"
+;                                                                     :hosted     "true"}
+;                                                  {:name "Kafka"}   {:links-main "https://kafka.apache.org/"}}
+;                   :technologies-recommendations [{:technology "Clojure" :type "assess" :date "2011-09-15"}
+;                                                  {:technology "Clojure" :type "adopt"  :date "2012-01-12"}
+;                                                  {:technology "Kafka"   :type "assess" :date "2013-12-16"}
+;                                                  {:technology "Kafka"   :type "adopt"  :date "2016-03-03"}]}
+;         res (#'f/recordset->tables recordset)]
+;     (is (= expected res))
+;     (is (s/valid? ::f/tables res) (s/explain-str ::f/tables res))
+;     (doseq [row (:technologies-recommendations res)]
+;       (is (= {::f/columns {:technology {::f/fk-table-name :technologies}}}
+;              (meta row)))))
+;
+;   (let [recordset (map-entry :systems {"Discourse" {"links" {"main" "https://discourse.org/"}
+;                                                     "containers" {"web"   {"summary" "web server", "technology" "Tomcat"}
+;                                                                   "db"    {"summary" "db server",  "technology" "Access"}
+;                                                                   "cache" {"summary" "hot keys",   "technology" "PHP"}}}})
+;         expected  {:systems            {{:name "Discourse"} {:links-main "https://discourse.org/"}}
+;                    :systems-containers {{:system "Discourse" :name "web"}   {:summary "web server" :technology "Tomcat"}
+;                                         {:system "Discourse" :name "db"}    {:summary "db server"  :technology "Access"}
+;                                         {:system "Discourse" :name "cache"} {:summary "hot keys"   :technology "PHP"}}}
+;         res (#'f/recordset->tables recordset)]
+;     (is (= expected res))
+;     ; (is (s/valid? ::f/tables res) (s/explain-str ::f/tables res))
+;     ; (doseq [row (:systems-containers res)]
+;     ;   (is (= {::f/columns {:technology {::f/fk-table-name :systems}}}
+;     ;          (meta row))))
+;              ))
+
+; (deftest flatten-db
+;   (let [db {:technologies {"Clojure" {"links" {"main" "https://clojure.org/"}
+;                                                        "props" {"hosted" "true"}
+;                                                        "recommendations" [{"type" "assess", "date" "2011-09-15"}
+;                                                                           {"type" "adopt", "date" "2012-01-12"}]}
+;                            "Kafka"   {"links" {"main" "https://kafka.apache.org/"}
+;                                       "recommendations" [{"type" "assess", "date" "2013-12-16"}
+;                                                          {"type" "adopt", "date" "2016-03-03"}]}}
+;             :systems {"Discourse" {"links" {"main" "https://discourse.org/"}
+;                                    "containers" {"web"   {"summary" "web server", "technology" "Tomcat"}
+;                                                  "db"    {"summary" "db server",  "technology" "Access"}
+;                                                  "cache" {"summary" "hot keys",   "technology" "PHP"}}}}}
+;         expected {:technologies                 {{:name "Clojure"} {:links-main "https://clojure.org/"
+;                                                                     :hosted     "true"}
+;                                                  {:name "Kafka"}   {:links-main "https://kafka.apache.org/"}}
+;                   :technologies-recommendations [{:technology "Clojure" :type "assess" :date "2011-09-15"}
+;                                                  {:technology "Clojure" :type "adopt"  :date "2012-01-12"}
+;                                                  {:technology "Kafka"   :type "assess" :date "2013-12-16"}
+;                                                  {:technology "Kafka"   :type "adopt"  :date "2016-03-03"}]
+;                   :systems                      {{:name "Discourse"} {:links-main "https://discourse.org/"}}
+;                   :systems-containers           {{:system "Discourse" :name "web"}   {:summary "web server" :technology "Tomcat"}
+;                                                  {:system "Discourse" :name "db"}    {:summary "db server"  :technology "Access"}
+;                                                  {:system "Discourse" :name "cache"} {:summary "hot keys"   :technology "PHP"}}}
+;         res (#'f/flatten-db db)]
+;     (is (= expected res))))
