@@ -180,64 +180,37 @@
 (def *
   (proxy [Object] [] (equals [o] true)))
 
-(deftest path+value->rows
-  (are [path v expected] (= expected (#'f/path+value->rows path v))
+(deftest path+val->tables
+  (are [path v expected] (= expected (#'f/path+val->tables {} [path v]))
     [:technologies :Clojure :recommendations]
     [{:type "assess" :date "2011-09-15"}
      {:type "adopt"  :date "2012-01-12"}]
-    [{:table-name :technologies-recommendations
-      :p-keys     []
-      :f-keys     [{:this-table-col :technology
-                    :f-table-name   :technologies
-                    :f-table-col    :name}]
-      :cols       {:technology "Clojure" :type "assess" :date "2011-09-15"}}
-     {:table-name :technologies-recommendations
-       :p-keys     []
-       :f-keys     [{:this-table-col :technology
-                     :f-table-name   :technologies
-                     :f-table-col    :name}]
-       :cols       {:technology "Clojure" :type "adopt"  :date "2012-01-12"}}]
+    {:technologies-recommendations [{:technology "Clojure" :type "assess" :date "2011-09-15"}
+                                    {:technology "Clojure" :type "adopt"  :date "2012-01-12"}
+                                    {:technology "Kafka"   :type "assess" :date "2013-12-16"}
+                                    {:technology "Kafka"   :type "adopt"  :date "2016-03-03"}]}
 
-    ; [:systems :Discourse :summary]
-    ; "Web forums that don’t suck."
-    ; [{:table-name :systems
-    ;   :p-keys     {:name "Discourse"}
-    ;   :f-keys     {}
-    ;   :col-name   :summary
-    ;   :val        "Web forums that don’t suck."}]
-    ;
-    ; [:systems :Discourse :links :main]
-    ; "https://discourse.org"
-    ; [{:table-name :systems-links
-    ;   :p-keys     {:name "main" :system "Discourse"}
-    ;   :f-keys     [{:this-table-col :system
-    ;                 :f-table-name   :systems
-    ;                 :f-table-col    :name}]
-    ;   :col-name   :val
-    ;   :val        "https://discourse.org"}]
-    ;
-    ; [:systems :Discourse :containers :web :technology]
-    ; "Tomcat"
-    ; [{:table-name :systems-containers
-    ;   :p-keys     {:name "web" :system "Discourse"}
-    ;   :f-keys     [{:this-table-col :system
-    ;                 :f-table-name   :systems
-    ;                 :f-table-col    :name}]
-    ;   :col-name   :technology
-    ;   :val        "Tomcat"}]
-    ;
-    ; [:systems :Discourse :containers :web :tags :regions]
-    ; ["us", "uk"]
-    ; [{:table-name :systems-containers-tags
-    ;   :p-keys     {:system "Discourse" :container "web" :name "regions"}
-    ;   :f-keys     [{:this-table-col :system
-    ;                 :f-table-name   :systems
-    ;                 :f-table-col    :name}
-    ;                {:this-table-col :container
-    ;                 :f-table-name   :containers
-    ;                 :f-table-col    :name}]
-    ;   :col-name   :val
-    ;   :val        ["us", "uk"]}]
+    [:systems :Discourse :summary]
+    "Web forums that don’t suck."
+    {:systems  {{:name "Discourse"} {:summary "Web forums that don’t suck."}}}
+
+    [:systems :Discourse :links :main]
+    "https://discourse.org"
+    {:systems       {{:name "Discourse"} {}}
+     :systems-links {{:name "main" :system "Discourse"} {:val "https://discourse.org"}}}
+
+    [:systems :Discourse :containers :web :technology]
+    "Tomcat"
+    {:systems            {{:name "Discourse"} {}}
+     :systems-containers {{:system "Discourse" :name "web"} {:technology "Tomcat"}}}
+
+    [:systems :Discourse :containers :web :tags :regions]
+    ["us", "uk"]
+    {:systems                 {{:name "Discourse"} {}}
+     :systems-containers      {{:system "Discourse" :name "web"} {}}
+     :systems-containers-tags {{:system "Discourse" :container "web" :name "regions"}
+                               {:val ["us", "uk"]}}}
+
     ;
     ; [:technologies :Clojure :recommendations 0 :type]
     ; "assess"

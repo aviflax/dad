@@ -176,7 +176,14 @@
         col-name  (if (odd? (count path))
                     (last path)
                     :val)]
-    (-> (update-in tables [table-name p-keys] merge {col-name v}))))
+    (-> tables
+        ;; basic case
+        (update-in [table-name p-keys] merge {col-name v})
+        
+        ;; ensure intermediate records
+        
+        
+        )))
 
 (defn db->tables
   [m]
