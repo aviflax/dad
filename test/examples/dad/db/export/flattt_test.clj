@@ -178,6 +178,44 @@
      [:systems :Discourse :containers :db :summary]        "db server"
      [:systems :Discourse :containers :db :technology]     "Access"}))
 
+(deftest interpolate-paths
+  (are [in expected] (= expected (#'f/interpolate-paths in))
+    
+    
+    ; in
+    {[:systems :Discourse :summary]                        "Web forums that don’t suck."
+     [:systems :Discourse :links :main]                    "https://discourse.org"
+     [:systems :Discourse :containers :web :summary]       "web server"
+     [:systems :Discourse :containers :web :technology]    "JRun"
+     [:systems :Discourse :containers :web :tags :regions] ["us", "uk"]
+     [:systems :Discourse :containers :db :summary]        "db server"
+     [:systems :Discourse :containers :db :technology]     "Access"}
+   
+    ; expected
+    {[:systems :Discourse]                                 :Discourse
+     [:systems :Discourse :summary]                        "Web forums that don’t suck."
+     [:systems :Discourse :links :main]                    "https://discourse.org"
+     [:systems :Discourse :containers :web]                :web
+     [:systems :Discourse :containers :web :summary]       "web server"
+     [:systems :Discourse :containers :web :technology]    "JRun"
+     [:systems :Discourse :containers :web :tags :regions] ["us", "uk"]
+     [:systems :Discourse :containers :db]                 :db
+     [:systems :Discourse :containers :db :summary]        "db server"
+     [:systems :Discourse :containers :db :technology]     "Access"}))
+
+(->> [:systems :Discourse :containers :web :tags :regions]
+     
+     (mapv vec)
+     (into {}))
+       
+       (conj {} [:foo :bar])
+       (into {} [[:foo :bar]])
+
+
+(let [path [:systems :Discourse :containers :web :tags :regions]]
+  (clojure.pprint/pprint (map #(take % path)
+       (range 2 (count path) 2))))
+
 (def *
   (proxy [Object] [] (equals [o] true)))
 

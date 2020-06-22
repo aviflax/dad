@@ -114,6 +114,18 @@
                    :else                   [(conj path k) v])))
         (into {}))))
 
+(defn- interpolate-paths
+  [paths]
+  (reduce-kv
+    (fn [paths path _v]
+      (let [path-variants (map #(take % path) (range 2 (count path) 2))]
+         (->> (mapv #(vector % (last %)) path-variants)
+              (into {})
+              (merge paths))))
+    paths
+    paths)
+  )
+
 (defn- key-col-name
   [key-val]
   (if (or (number? key-val)
