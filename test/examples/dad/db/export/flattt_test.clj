@@ -167,7 +167,8 @@
     ; in
     {:systems {:Discourse {:summary    "Web forums that don’t suck."
                            :links      {:main "https://discourse.org"}
-                           :containers {:web   {:summary "web server" :technology "JRun" :tags {:regions ["us", "uk"]}} :db    {:summary "db server"  :technology "Access"}}}}}
+                           :containers {:web   {:summary "web server" :technology "JRun" :tags {:regions ["us", "uk"]}}
+                                        :db    {:summary "db server"  :technology "Access"}}}}}
     ; expected
     {[:systems :Discourse :summary]                        "Web forums that don’t suck."
      [:systems :Discourse :links :main]                    "https://discourse.org"
