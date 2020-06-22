@@ -53,103 +53,6 @@
      :repos         ["saclib"]
      :related-repos ["saclib_adapter" "saclib-client"]}))
 
-; (deftest flatten-paths
-;   (are [in expected] (= expected (#'f/flatten-paths in "-"))
-;
-;     ; in
-;     {:containers    {:API     {:marathon-ids {:kp "/saclib/api"}}
-;                      :Hutch   {:marathon-ids {:kp "/saclib/hutch"}
-;                                :technologies ["RabbitMQ" "Ruby"]}
-;                      :Sidekiq {:marathon-ids {:kp "/saclib/sidekiq"}
-;                                :technologies ["Ruby"]}
-;                      :Web     {:marathon-ids {:kp "/saclib/web"}}}
-;      :description   "Salad Container Library -- builds libraries of salad containers (duh)"
-;      :regions       ["kp"]
-;      :marathon-ids  {:kp "/saclib"}
-;      :repos         ["saclib"]
-;      :related-repos ["saclib_adapter" "saclib-client"]}
-;
-;     ; expected
-;     {:containers      {:API     {:marathon-ids-kp "/saclib/api"}
-;                        :Hutch   {:marathon-ids-kp "/saclib/hutch"
-;                                  :technologies    ["RabbitMQ" "Ruby"]}
-;                        :Sidekiq {:marathon-ids-kp "/saclib/sidekiq"
-;                                  :technologies    ["Ruby"]}
-;                        :Web     {:marathon-ids-kp "/saclib/web"}}
-;      :description     "Salad Container Library -- builds libraries of salad containers (duh)"
-;      :regions         ["kp"]
-;      :marathon-ids-kp "/saclib"
-;      :repos           ["saclib"]
-;      :related-repos   ["saclib_adapter" "saclib-client"]}))
-;
-; (deftest split-record
-;   (are [table-name record expected] (= expected (#'f/split-record table-name record))
-;     ; table-name
-;     :technologies
-;     ; record
-;     (map-entry "Clojure" {:links-main "https://clojure.org"
-;                           :recommendations [{:type "assess" :date "2011-09-15"}
-;                                             {:type "adopt"  :date "2012-01-12"}]})
-;     ; expected
-;     {:technologies                 {{:name "Clojure"} {:links-main "https://clojure.org"}}
-;      :technologies-recommendations [{:technology "Clojure" :type "assess" :date "2011-09-15"}
-;                                     {:technology "Clojure" :type "adopt"  :date "2012-01-12"}]}
-;
-;     ; --------------------
-;
-;     ; table-name
-;     :systems
-;     ; record
-;     (map-entry "Discourse" {:links-main "https://discourse.org"
-;                             :containers {:web   {:summary "web server" :technology "Tomcat"}
-;                                          :db    {:summary "db server"  :technology "Access"}
-;                                          :cache {:summary "hot keys"   :technology "PHP"}}})
-;     ; expected
-;     {:systems            {{:name "Discourse"} {:links-main "https://discourse.org"}}
-;      :systems-containers {{:system "Discourse" :name "web"}   {:summary "web server" :technology "Tomcat"}
-;                           {:system "Discourse" :name "db"}    {:summary "db server"  :technology "Access"}
-;                           {:system "Discourse" :name "cache"} {:summary "hot keys"   :technology "PHP"}}}
-;
-;     ; --------------------
-;
-;     ; table-name
-;     :systems
-;     ; record
-;     (map-entry "SACLIB" {:containers      {:API     {:marathon-ids-kp "/saclib/api"}
-;                                            :Hutch   {:marathon-ids-kp "/saclib/hutch"
-;                                                      :technologies ["RabbitMQ" "Ruby"]}
-;                                            :Sidekiq {:marathon-ids-kp "/saclib/sidekiq"
-;                                                      :technologies ["Ruby"]}
-;                                            :Web     {:marathon-ids-kp "/saclib/web"}}
-;                          :description     "Salad Container Library -- builds libraries of salad containers (duh)"
-;                          :regions         ["kp"]
-;                          :marathon-ids-kp "/saclib"
-;                          :repos           ["saclib"]
-;                          :related-repos   ["saclib_adapter" "saclib-client"]})
-;     ; expected
-;     {:systems            {{:name "SACLIB"} {:description     "Salad Container Library -- builds libraries of salad containers (duh)"
-;                                             :regions         ["kp"]
-;                                             :marathon-ids-kp "/saclib"
-;                                             :repos           ["saclib"]
-;                                             :related-repos   ["saclib_adapter" "saclib-client"]}}
-;      :systems-containers {{:system "SACLIB" :name "API"}     {:marathon-ids-kp "/saclib/api"}
-;                           {:system "SACLIB" :name "Hutch"}   {:marathon-ids-kp "/saclib/hutch"
-;                                                              :technologies    ["RabbitMQ" "Ruby"]}
-;                           {:system "SACLIB" :name "Sidekiq"} {:marathon-ids-kp "/saclib/sidekiq"
-;                                                              :technologies    ["Ruby"]}
-;                           {:system "SACLIB" :name "Web"}     {:marathon-ids-kp "/saclib/web"}}})
-;
-;   (let [table-name :technologies
-;         record (map-entry "Clojure" {:links-main "https://clojure.org"
-;                                      :recommendations [{:type "assess" :date "2011-09-15"}
-;                                                        {:type "adopt"  :date "2012-01-12"}]})
-;         res (#'f/split-record table-name record)]
-;     (is (s/valid? ::f/tables res) (s/explain-str ::f/tables res))))
-
-
-
-
-
 (deftest pathize
   (are [in expected] (= expected (#'f/pathize in))
     ; in
@@ -180,7 +83,17 @@
 
 (deftest interpolate-paths
   (are [in expected] (= expected (#'f/interpolate-paths in))
-    
+    ; in
+    {[:technologies :Clojure :links :main]     "https://clojure.org"
+     [:technologies :Clojure :recommendations] [{:type "assess" :date "2011-09-15"}
+                                                {:type "adopt"  :date "2012-01-12"}]}
+    ; expected
+    {[:technologies :Clojure]                  :Clojure
+     [:technologies :Clojure :links :main]     "https://clojure.org"
+     [:technologies :Clojure :recommendations] [{:type "assess" :date "2011-09-15"}
+                                                {:type "adopt"  :date "2012-01-12"}]}
+  
+    ; --------------------
     
     ; in
     {[:systems :Discourse :summary]                        "Web forums that don’t suck."
@@ -190,7 +103,7 @@
      [:systems :Discourse :containers :web :tags :regions] ["us", "uk"]
      [:systems :Discourse :containers :db :summary]        "db server"
      [:systems :Discourse :containers :db :technology]     "Access"}
-   
+  
     ; expected
     {[:systems :Discourse]                                 :Discourse
      [:systems :Discourse :summary]                        "Web forums that don’t suck."
@@ -202,19 +115,6 @@
      [:systems :Discourse :containers :db]                 :db
      [:systems :Discourse :containers :db :summary]        "db server"
      [:systems :Discourse :containers :db :technology]     "Access"}))
-
-(->> [:systems :Discourse :containers :web :tags :regions]
-     
-     (mapv vec)
-     (into {}))
-       
-       (conj {} [:foo :bar])
-       (into {} [[:foo :bar]])
-
-
-(let [path [:systems :Discourse :containers :web :tags :regions]]
-  (clojure.pprint/pprint (map #(take % path)
-       (range 2 (count path) 2))))
 
 (def *
   (proxy [Object] [] (equals [o] true)))
@@ -229,37 +129,42 @@
                                     {:technology "Kafka"   :type "assess" :date "2013-12-16"}
                                     {:technology "Kafka"   :type "adopt"  :date "2016-03-03"}]}
 
+    ; --------------------
+
+    [:systems :Discourse]
+    :Discourse
+    {:systems {{:name "Discourse"} {}}}
+    
+    ; --------------------
+    
+    [:systems :Discourse :containers :db]
+    :db
+    {:systems-containers {{:name "db" :system "Discourse"} {}}}
+
+    ; --------------------
+
     [:systems :Discourse :summary]
     "Web forums that don’t suck."
-    {:systems  {{:name "Discourse"} {:summary "Web forums that don’t suck."}}}
+    {:systems {{:name "Discourse"} {:summary "Web forums that don’t suck."}}}
+
+    ; --------------------
 
     [:systems :Discourse :links :main]
     "https://discourse.org"
-    {:systems       {{:name "Discourse"} {}}
-     :systems-links {{:name "main" :system "Discourse"} {:val "https://discourse.org"}}}
+    {:systems-links {{:name "main" :system "Discourse"} {:val "https://discourse.org"}}}
+
+    ; --------------------
 
     [:systems :Discourse :containers :web :technology]
     "Tomcat"
-    {:systems            {{:name "Discourse"} {}}
-     :systems-containers {{:system "Discourse" :name "web"} {:technology "Tomcat"}}}
+    {:systems-containers {{:system "Discourse" :name "web"} {:technology "Tomcat"}}}
+
+    ; --------------------
 
     [:systems :Discourse :containers :web :tags :regions]
     ["us", "uk"]
-    {:systems                 {{:name "Discourse"} {}}
-     :systems-containers      {{:system "Discourse" :name "web"} {}}
-     :systems-containers-tags {{:system "Discourse" :container "web" :name "regions"}
+    {:systems-containers-tags {{:system "Discourse" :container "web" :name "regions"}
                                {:val ["us", "uk"]}}}
-
-    ;
-    ; [:technologies :Clojure :recommendations 0 :type]
-    ; "assess"
-    ; [{:table-name :technologies-recommendations
-    ;   :p-keys     {:technology "Clojure" :id 0}
-    ;   :f-keys     [{:this-table-col :technology
-    ;                 :f-table-name   :technologies
-    ;                 :f-table-col    :name}]
-    ;   :col-name   :type
-    ;   :val        "assess"}]
     ))
 
 (deftest db->tables

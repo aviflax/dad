@@ -123,8 +123,7 @@
               (into {})
               (merge paths))))
     paths
-    paths)
-  )
+    paths))
 
 (defn- key-col-name
   [key-val]
@@ -187,15 +186,15 @@
                              {(key-col-name key-val) (unkeyword key-val)})))
         col-name  (if (odd? (count path))
                     (last path)
-                    :val)]
-    (-> tables
-        ;; basic case
-        (update-in [table-name p-keys] merge {col-name v})
-        
-        ;; ensure intermediate records
-        
-        
-        )))
+                    :val)
+        col (if (= (last path) v)
+              {}
+              {col-name v})]
+    (update-in tables [table-name p-keys] merge col)))
+
+(path+val->tables
+  {}
+  [[:systems :Discourse] :Discourse])
 
 (defn db->tables
   [m]
@@ -203,6 +202,7 @@
        (keywordize-keys)
        (fold-props)
        (pathize)
+       (interpolate-paths)
        (reduce path+val->tables {})))
 
 (defn- ->key-col
