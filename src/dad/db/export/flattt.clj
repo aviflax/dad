@@ -41,6 +41,7 @@
     v))
 
 (def ^:private separator "-")
+(def ^:private separator-pattern (re-pattern separator))
 
 (defn- join-names
   [names]
@@ -174,16 +175,16 @@
 (defn- path+val->tables
   [tables [path v]]
   (let [kpp   (partition 2 path)
-        table-name (->> (if (sequential? v)
-                          path
-                          (butlast path))
-                   (take-nth 2)
-                   (join-names))
-        p-keys (->> (butlast kpp)
-                    (map (fn [[table-name key-val]] [(singular table-name) (unkeyword key-val)]))
-                    (into {})
-                    (merge (let [[_ key-val] (last kpp)]
-                             {(key-col-name key-val) (unkeyword key-val)})))
+        table-name-parts (take-nth 2 (if (sequential? v) path (butlast path)))
+        table-name (join-names table-name-parts)
+        fk-table? (> (count table-name-parts) 1)
+        f-keys (if fk-table?
+                  (->> kpp
+                       (map (fn [[table-name key-val]] [(singular table-name) (unkeyword key-val)]))
+                       (into {}))
+                  {})
+        p-keys (merge f-keys (let [[_ key-val] (last kpp)]
+                               {(key-col-name key-val) (unkeyword key-val)}))
         col-name  (if (odd? (count path))
                     (last path)
                     :val)

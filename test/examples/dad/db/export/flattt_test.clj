@@ -124,10 +124,9 @@
     [:technologies :Clojure :recommendations]
     [{:type "assess" :date "2011-09-15"}
      {:type "adopt"  :date "2012-01-12"}]
-    {:technologies-recommendations [{:technology "Clojure" :type "assess" :date "2011-09-15"}
-                                    {:technology "Clojure" :type "adopt"  :date "2012-01-12"}
-                                    {:technology "Kafka"   :type "assess" :date "2013-12-16"}
-                                    {:technology "Kafka"   :type "adopt"  :date "2016-03-03"}]}
+    {:technologies-recommendations {{:technology "Clojure"}
+                                    {:recommendations [{:type "assess" :date "2011-09-15"}
+                                                       {:type "adopt"  :date "2012-01-12"}]}}}
 
     ; --------------------
 
