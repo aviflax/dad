@@ -174,8 +174,9 @@
 
 (defn- path+val->tables
   [tables [path v]]
-  (let [kpp   (partition 2 path)
-        table-name-parts (take-nth 2 (butlast path))
+  (let [kpp (partition 2 path)
+        val-rows? (and (sequential? v) (map? (first v))) ; is the value a coll of rows?
+        table-name-parts (take-nth 2 (if val-rows? path (butlast path)))
         table-name (join-names table-name-parts)
         fk-table? (pos? (count table-name-parts))
         f-keys (if fk-table?
@@ -191,11 +192,9 @@
         col (if (= (last path) v)
               {}
               {col-name v})]
-    (update-in tables [table-name p-keys] merge col)))
-
-(path+val->tables
-  {}
-  [[:systems :Discourse] :Discourse])
+    (if val-rows?
+      (update tables table-name concat (map #(merge f-keys %) v))
+      (update-in tables [table-name p-keys] merge col))))
 
 (defn db->tables
   [m]
