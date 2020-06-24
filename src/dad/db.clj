@@ -8,9 +8,9 @@
   prop-key: any valid simple YAML value
   prop-val: any valid simple YAML value"
   (:refer-clojure :exclude [read])
-  (:require [dad.medley :as m]
+  (:require [clojure.java.io :as io]
+            [dad.medley :as m]
             [dad.yaml :as yaml]
-            [clojure.java.io :as io]
             [medley.core :as mc :refer [deep-merge map-vals]]))
 
 (set! *warn-on-reflection* true)

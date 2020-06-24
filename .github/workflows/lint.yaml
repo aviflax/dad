@@ -1,0 +1,14 @@
+name: Lint
+on: push
+jobs:
+  clj-kondo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup clj-kondo
+        uses: DeLaGuardo/setup-clj-kondo@822352b8aa37d5c94135e67f7b4e2f46c08008a8 # https://github.com/DeLaGuardo/setup-clj-kondo/releases/tag/v1
+        with:
+          version: '2020.06.12'
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Lint
+        run: clj-kondo --lint src --config '{:output {:pattern "::{{level}} file={{filename}},line={{row}},col={{col}}::{{message}}"}}'
