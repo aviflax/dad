@@ -77,6 +77,7 @@
               (= out in)))))
 
 (defn- fold-props
+  "TODO: we could probably fold this operation into pathize."
   [m]
   (postwalk
     (fn [v]
@@ -121,7 +122,18 @@
       :id
       :name))
 
+(s/def ::path (s/coll-of ::scalar :gen-max 10))
+(s/def ::path-val (s/or :scalar       ::scalar
+                        :unkeyed-rows ::unkeyed-rows))
+
+(s/fdef path+val->tables
+  :args (s/cat :tables   ::tables
+               :path+val (s/tuple ::path ::path-val))
+  :ret  ::tables)
+
 (defn- path+val->tables
+  "Adds the supplied value to the supplied tables aggregate, as per the supplied path."
+  ; The args are shaped like this because it’s meant to be used in a reduce.
   [tables [path v]]
   (let [kpp (partition 2 path)
         val-rows? (and (sequential? v) (map? (first v))) ; is the value a coll of rows?
@@ -144,6 +156,10 @@
     (if val-rows?
       (update tables table-name concat (map #(merge f-keys %) v))
       (update-in tables [table-name p-keys] merge col))))
+
+(s/fdef db->tables
+  :args (s/cat :db :dad/db)
+  :ret  ::tables)
 
 (defn db->tables
   [m]
