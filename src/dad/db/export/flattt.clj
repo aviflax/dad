@@ -10,18 +10,22 @@
             [medley.core :refer [deep-merge]]))
 
 (s/def ::non-blank-string (s/and string? (complement str/blank?)))
-(s/def ::scalar (s/or :num number? :str string? :kw keyword?))
-(s/def ::non-empty-scalar (s/or :number number?
+(s/def ::non-blank-keyword (s/with-gen keyword?
+                              #(gen/fmap keyword (s/gen ::non-blank-string))))
+(s/def ::scalar           (s/or :number number?
                                 :keyword keyword?
+                                :string string?))
+(s/def ::non-empty-scalar (s/or :number number?
+                                :keyword ::non-blank-keyword
                                 :string ::non-blank-string))
-(s/def ::col-name         keyword?)
+(s/def ::col-name         ::non-blank-keyword)
 (s/def ::row-col-val      (s/or :scalar      ::non-empty-scalar
                                 :scalar-coll (s/coll-of ::non-empty-scalar :gen-max 10)))
 (s/def ::row-cols         (s/map-of ::col-name ::row-col-val :gen-max 10))
 (s/def ::key-cols         (s/map-of ::col-name ::non-empty-scalar))
 (s/def ::keyed-rows       (s/map-of ::key-cols ::row-cols :gen-max 10))
 (s/def ::unkeyed-rows     (s/coll-of ::row-cols :gen-max 10))
-(s/def ::table-name       keyword?)
+(s/def ::table-name       ::non-blank-keyword)
 (s/def ::tables           (s/map-of ::table-name
                                     (s/or :keyed ::keyed-rows
                                           :unkeyed ::unkeyed-rows)
@@ -117,14 +121,14 @@
       :id
       :name))
 
-(s/fdef add-fk
-  :args (s/cat :m            ::row-cols
-               :name-and-val (s/coll-of ::scalar :count 2))
-  :ret  ::key-cols)
+; (s/fdef add-fk
+;   :args (s/cat :m            ::row-cols
+;                :name-and-val (s/tuple ::non-blank-keyword ::scalar))
+;   :ret  ::key-cols)
 
 (defn- add-fk
   [m [fk-table-name fk-table-key-val]]
-  (let [col-name (singular fk-table-name)]
+  (let [col-name (or (singular fk-table-name) fk-table-name)]
     (-> (assoc m col-name (unkeyword fk-table-key-val))
         (vary-meta deep-merge {::columns {col-name {::fk-table-name fk-table-name}}}))))
 
@@ -134,10 +138,11 @@
 (s/def ::path-val (s/or :row-col-var  ::row-col-val
                         :unkeyed-rows ::unkeyed-rows))
 
-(s/fdef path+val->tables
-  :args (s/cat :tables   ::tables
-               :path+val (s/tuple ::path ::path-val))
-  :ret  ::tables)
+; TODO
+; (s/fdef path+val->tables
+;   :args (s/cat :tables   ::tables
+;                :path+val (s/tuple ::path ::path-val))
+;   :ret  ::tables)
 
 (defn- path+val->tables
   "Adds the supplied value to the supplied tables aggregate, as per the supplied path."
@@ -149,7 +154,7 @@
         table-name (join-names table-name-parts)
         fk-table? (pos? (count table-name-parts))
         f-keys (if fk-table?
-                  (reduce add-fk {} (if val-rows? kpp (butlast kpp)))
+                  (reduce add-fk {} (vec (if val-rows? kpp (butlast kpp))))
                   {})
         p-keys (merge f-keys (let [[_ key-val] (last kpp)]
                                {(key-col-name key-val) (unkeyword key-val)}))
@@ -163,9 +168,10 @@
       (update tables table-name concat (map #(merge f-keys %) v))
       (update-in tables [table-name p-keys] merge col))))
 
-(s/fdef db->tables
-  :args (s/cat :db :dad/db)
-  :ret  ::tables)
+; TODO
+; (s/fdef db->tables
+;   :args (s/cat :db :dad/db)
+;   :ret  ::tables)
 
 (defn db->tables
   [m]
