@@ -6,9 +6,7 @@
             [clojure.spec.alpha :as s]
             [clojure.spec.gen.alpha :as gen]
             [clojure.walk :as walk :refer [keywordize-keys postwalk]]
-            [dad.medley :as dm]
-            [inflections.core :refer [singular]]
-            [medley.core :as mc :refer [map-keys map-vals]]))
+            [inflections.core :refer [singular]]))
 
 (s/def ::non-blank-string (s/and string? (complement str/blank?)))
 
@@ -41,7 +39,6 @@
     v))
 
 (def ^:private separator "-")
-(def ^:private separator-pattern (re-pattern separator))
 
 (defn- join-names
   [names]
@@ -88,15 +85,6 @@
         v))
     m))
 
-(defn- kp->tp
-  [kp]
-  (cond
-    (> (count kp) 2)
-    [(first kp) (second kp) (join-names (drop 2 kp))]
-    
-    :else
-    kp))
-
 (defn- pathize
   {:derived-from "https://andersmurphy.com/2019/11/30/clojure-flattening-key-paths.html"}
   ([m]
@@ -133,45 +121,6 @@
       :id
       :name))
 
-(defn- path+value->rows
-  [path v]
-  (let [kp  path ;[:systems :Discourse :containers :web :technology]
-        kpp (partition 2 kp)
-        table  (-> (if (sequential? v)
-                     (take-nth 2 kp)
-                     (take-nth 2 (butlast kp)))
-                   (join-names))
-        p-keys (->> (butlast kpp)
-                    (map (fn [[table-name key-val]] [(singular table-name) (unkeyword key-val)]))
-                    (into {})
-                    (merge (let [[_ key-val] (last kpp)]
-                             {(key-col-name key-val) (unkeyword key-val)})))
-        f-keys (->> (if (even? (count kp))
-                      (butlast kpp)
-                      kpp)
-                    (map (fn [[table-name key-val]]
-                              {:this-table-col (singular table-name)
-                               :f-table-name   table-name
-                               :f-table-col    (key-col-name key-val)})))
-        col-name  (last kp)]
-    ; (println "kp:    " kp)
-    ; (println "kpp:   " kpp)
-    ; (println "table: " table)
-    ; (println "keys:  " keys)
-    ; (println "col:   " col)
-    (if (and (sequential? v)
-             (map? (first v)))
-      (map (fn [row]
-             {:table-name table
-              :p-keys [] ; p-keys
-              :f-keys f-keys
-              :cols row})
-           v)
-      [{:table-name table
-        :p-keys p-keys
-        :f-keys f-keys
-        :cols {(if (odd? (count kp)) col-name :val) v}}])))
-
 (defn- path+val->tables
   [tables [path v]]
   (let [kpp (partition 2 path)
@@ -204,73 +153,3 @@
        (pathize)
        (interpolate-paths)
        (reduce path+val->tables {})))
-
-(defn- ->key-col
-  [k]
-  (cond
-    (map? k) k
-    (or (string? k) (keyword? k)) {:name (name k)}))
-
-(s/fdef add-fk
-  :args (s/cat :val-cols         ::record-val-cols
-               :fk-table-name    ::table-name
-               :fk-table-key-val ::col-val)
-  :ret  ::record-val-cols)
-
-(defn- add-fk
-  [rec-m fk-table-name fk-table-key-val]
-  (let [col-name (singular fk-table-name)
-        key-val (if (keyword? fk-table-key-val)
-                  (name fk-table-key-val)
-                  fk-table-key-val)]
-    (-> (assoc rec-m col-name key-val)
-        (with-meta {::columns {col-name {::fk-table-name fk-table-name}}}))))
-
-
-
-#_(comment
-  [:technologies :Kafka :recommendations 0 :type]
-
-  (path+value->cell [:systems :Discourse :summary] "Web forums that don’t suck.")
-  (path+value->cell [:systems :Discourse :containers :web :technology] "Tomcat")
-  (path+value->cell [:systems :Discourse :containers :web :tags :regions] ["us", "uk"])
-  (path+value->cell [:technologies :Clojure :recommendations 0 :type] "assess")
-  
-  
-  (->> {:systems {:Discourse {:summary    "Web forums that don’t suck."
-                              :links      {:main "https://discourse.org/"}
-                              :containers {:web   {:summary "web server" :technology "Tomcat"}
-                                           :db    {:summary "db server"  :technology "Access"}
-                                           :cache {:summary "hot keys"   :technology "PHP"}}}}}
-       (db->tables))
-
-  (->> {:technologies {:Clojure {:links {:main "https://clojure.org/"}
-                                 :recommendations [{:type "assess" :date "2011-09-15"}
-                                                   {:type "adopt"  :date "2012-01-12"}]}}}
-       (db->tables))
-       ; (pathize) (partition 2)
-       ; clojure.pprint/pprint)
-
-  (->> {:technologies {:Clojure {:links {:main "https://clojure.org/"}
-                                 :recommendations [{:type "assess" :date "2011-09-15"}
-                                                   {:type "adopt"  :date "2012-01-12"}]}}}
-       (db->tables))
-
-
-  ; (->>
-  ;   [[:systems :Discourse :summary]
-  ;    [:systems :Discourse :links :main]
-  ;    [:systems :Discourse :containers :web :summary]
-  ;    [:systems :Discourse :containers :web :technology]]
-  ;   (map kp->tp)
-  ;   clojure.pprint/pprint)
-
-  #_(
-    [:systems :Discourse :containers :web :technology]
-    ->
-    [:systems-containers [:system :Discourse :name :web] :technology])
-
-
-(->> [:technologies :Clojure :recommendations] (partition 2))
-
-)

@@ -3,27 +3,13 @@
             [clojure.spec.test.alpha :as stest]
             [clojure.test :refer [deftest is are]]
             [dad.db.export.flattt :as f]
-            [expound.alpha :as expound]
-            [medley.core :as mc :refer [map-entry]])
+            [expound.alpha :as expound])
   (:refer-clojure :exclude [*]))
 
 ; See https://github.com/bhb/expound#printer-options
 (set! s/*explain-out* (expound/custom-printer {:print-specs? false}))
 
 (stest/instrument (stest/enumerate-namespace 'dad.db.export.flattt))
-
-(deftest add-fk
-  (let [rec-m {:type "assess"
-               :date "2011-09-15"}
-        fk-table-name :technologies
-        fk-table-key-val "Clojure"
-        expected {:technology "Clojure"
-                  :type "assess"
-                  :date "2011-09-15"}
-        expected-meta {::f/columns {:technology {::f/fk-table-name fk-table-name}}}
-        res (#'f/add-fk rec-m fk-table-name fk-table-key-val)]
-    (is (= expected res))
-    (is (= expected-meta (meta res)))))
     
 (deftest fold-props
   (are [in expected] (= expected (#'f/fold-props in))
@@ -115,9 +101,6 @@
      [:systems :Discourse :containers :db]                 :db
      [:systems :Discourse :containers :db :summary]        "db server"
      [:systems :Discourse :containers :db :technology]     "Access"}))
-
-(def *
-  (proxy [Object] [] (equals [o] true)))
 
 (deftest path+val->tables
   (are [path v expected] (= expected (#'f/path+val->tables {} [path v]))
