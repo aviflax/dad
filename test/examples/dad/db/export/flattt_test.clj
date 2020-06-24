@@ -24,7 +24,7 @@
         res (#'f/add-fk rec-m fk-table-name fk-table-key-val)]
     (is (= expected res))
     (is (= expected-meta (meta res)))))
-
+    
 (deftest fold-props
   (are [in expected] (= expected (#'f/fold-props in))
   
@@ -183,10 +183,10 @@
                   :technologies-links           {{:name "main" :technology "Clojure"} {:val "https://clojure.org"}
                                                  {:name "main" :technology "Crux"}    {:val "https://opencrux.com"}
                                                  {:name "main" :technology "Kafka"}   {:val "https://kafka.apache.org"}}
-                  :technologies-recommendations {{:id 0 :technology "Clojure"} {:type "assess" :date "2011-09-15"}
-                                                 {:id 1 :technology "Clojure"} {:type "adopt"  :date "2012-01-12"}
-                                                 {:id 0 :technology "Kafka"}   {:type "assess" :date "2013-12-16"}
-                                                 {:id 1 :technology "Kafka"}   {:type "adopt"  :date "2016-03-03"}}
+                  :technologies-recommendations [{:technology "Clojure" :type "assess" :date "2011-09-15"}
+                                                 {:technology "Clojure" :type "adopt"  :date "2012-01-12"}
+                                                 {:technology "Kafka" :type "assess" :date "2013-12-16"}
+                                                 {:technology "Kafka" :type "adopt"  :date "2016-03-03"}]
                   :systems                      {{:name "Discourse"} {}}
                   :systems-links                {{:name "main" :system "Discourse"} {:val "https://discourse.org"}}
                   :systems-containers           {{:system "Discourse" :name "web"}   {:summary "web server" :technology "Tomcat"}
