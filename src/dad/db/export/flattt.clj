@@ -175,9 +175,9 @@
 (defn- path+val->tables
   [tables [path v]]
   (let [kpp   (partition 2 path)
-        table-name-parts (take-nth 2 (if (sequential? v) path (butlast path)))
+        table-name-parts (take-nth 2 (butlast path))
         table-name (join-names table-name-parts)
-        fk-table? (> (count table-name-parts) 1)
+        fk-table? (pos? (count table-name-parts))
         f-keys (if fk-table?
                   (->> (butlast kpp)
                        (map (fn [[table-name key-val]] [(singular table-name) (unkeyword key-val)]))

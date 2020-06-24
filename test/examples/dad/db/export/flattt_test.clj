@@ -124,9 +124,14 @@
     [:technologies :Clojure :recommendations]
     [{:type "assess" :date "2011-09-15"}
      {:type "adopt"  :date "2012-01-12"}]
-    {:technologies-recommendations {{:technology "Clojure"}
-                                    {:recommendations [{:type "assess" :date "2011-09-15"}
-                                                       {:type "adopt"  :date "2012-01-12"}]}}}
+    {:technologies {{:name "Clojure"} {:recommendations [{:type "assess" :date "2011-09-15"}
+                                                         {:type "adopt"  :date "2012-01-12"}]}}}
+
+    ; --------------------
+
+    [:systems :Discourse :summary]
+    "Web forums that don’t suck."
+    {:systems {{:name "Discourse"} {:summary "Web forums that don’t suck."}}}
 
     ; --------------------
 
@@ -139,12 +144,6 @@
     [:systems :Discourse :containers :db]
     :db
     {:systems-containers {{:name "db" :system "Discourse"} {}}}
-
-    ; --------------------
-
-    [:systems :Discourse :summary]
-    "Web forums that don’t suck."
-    {:systems {{:name "Discourse"} {:summary "Web forums that don’t suck."}}}
 
     ; --------------------
 
@@ -163,8 +162,7 @@
     [:systems :Discourse :containers :web :tags :regions]
     ["us", "uk"]
     {:systems-containers-tags {{:system "Discourse" :container "web" :name "regions"}
-                               {:val ["us", "uk"]}}}
-    ))
+                               {:val ["us", "uk"]}}}))
 
 (deftest db->tables
   (let [db {:technologies {:Clojure {:links           {:main "https://clojure.org"}
