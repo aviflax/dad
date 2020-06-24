@@ -6,26 +6,21 @@
             [clojure.spec.alpha :as s]
             [clojure.spec.gen.alpha :as gen]
             [clojure.walk :as walk :refer [keywordize-keys postwalk]]
-            [inflections.core :refer [singular]]))
+            [inflections.core :refer [singular]]
+            [medley.core :refer [deep-merge]]))
 
 (s/def ::non-blank-string (s/and string? (complement str/blank?)))
-
-(defn scalar?
-  [v]
-  (or (number? v) (string? v) (keyword? v)))
-
-(s/def ::scalar scalar?)
-
+(s/def ::scalar (s/or :num number? :str string? :kw keyword?))
 (s/def ::non-empty-scalar (s/or :number number?
                                 :keyword keyword?
                                 :string ::non-blank-string))
 (s/def ::col-name         keyword?)
-(s/def ::col-val          (s/or :scalar      ::non-empty-scalar
+(s/def ::row-col-val      (s/or :scalar      ::non-empty-scalar
                                 :scalar-coll (s/coll-of ::non-empty-scalar :gen-max 10)))
-(s/def ::record-key-cols  (s/map-of ::col-name ::col-val :gen-max 10))
-(s/def ::record-val-cols  (s/map-of ::col-name ::col-val :gen-max 10))
-(s/def ::keyed-rows       (s/map-of ::record-key-cols ::record-val-cols :gen-max 10))
-(s/def ::unkeyed-rows     (s/coll-of ::record-val-cols :gen-max 10))
+(s/def ::row-cols         (s/map-of ::col-name ::row-col-val :gen-max 10))
+(s/def ::key-cols         (s/map-of ::col-name ::non-empty-scalar))
+(s/def ::keyed-rows       (s/map-of ::key-cols ::row-cols :gen-max 10))
+(s/def ::unkeyed-rows     (s/coll-of ::row-cols :gen-max 10))
 (s/def ::table-name       keyword?)
 (s/def ::tables           (s/map-of ::table-name
                                     (s/or :keyed ::keyed-rows
@@ -122,8 +117,21 @@
       :id
       :name))
 
+(s/fdef add-fk
+  :args (s/cat :m            ::row-cols
+               :name-and-val (s/coll-of ::scalar :count 2))
+  :ret  ::key-cols)
+
+(defn- add-fk
+  [m [fk-table-name fk-table-key-val]]
+  (let [col-name (singular fk-table-name)]
+    (-> (assoc m col-name (unkeyword fk-table-key-val))
+        (vary-meta deep-merge {::columns {col-name {::fk-table-name fk-table-name}}}))))
+
+; (fn [[table-name key-val]] [(singular table-name) (unkeyword key-val)])
+
 (s/def ::path (s/coll-of ::scalar :gen-max 10))
-(s/def ::path-val (s/or :scalar       ::scalar
+(s/def ::path-val (s/or :row-col-var  ::row-col-val
                         :unkeyed-rows ::unkeyed-rows))
 
 (s/fdef path+val->tables
@@ -141,9 +149,7 @@
         table-name (join-names table-name-parts)
         fk-table? (pos? (count table-name-parts))
         f-keys (if fk-table?
-                  (->> (if val-rows? kpp (butlast kpp))
-                       (map (fn [[table-name key-val]] [(singular table-name) (unkeyword key-val)]))
-                       (into {}))
+                  (reduce add-fk {} (if val-rows? kpp (butlast kpp)))
                   {})
         p-keys (merge f-keys (let [[_ key-val] (last kpp)]
                                {(key-col-name key-val) (unkeyword key-val)}))

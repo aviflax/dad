@@ -102,6 +102,26 @@
      [:systems :Discourse :containers :db :summary]        "db server"
      [:systems :Discourse :containers :db :technology]     "Access"}))
 
+(deftest add-fk
+  (let [m {}
+        fk-table-name :technologies
+        fk-table-key-val :Clojure
+        expected {:technology "Clojure"}
+        expected-meta {::f/columns {:technology {::f/fk-table-name fk-table-name}}}
+        res (#'f/add-fk m [fk-table-name fk-table-key-val])]
+    (is (= expected res))
+    (is (= expected-meta (meta res))))
+  (let [m (with-meta {:technology "Clojure"}
+                     {::f/columns {:technology {::f/fk-table-name :technologies}}})
+        fk-table-name :recommendations
+        fk-table-key-val :adopt
+        expected {:technology "Clojure" :recommendation "adopt"}
+        expected-meta {::f/columns {:technology {::f/fk-table-name :technologies}
+                                    :recommendation {::f/fk-table-name :recommendations}}}
+        res (#'f/add-fk m [fk-table-name fk-table-key-val])]
+    (is (= expected res))
+    (is (= expected-meta (meta res)))))
+
 (deftest path+val->tables
   (testing "data"
     (are [path v expected] (= expected (#'f/path+val->tables {} [path v]))
@@ -147,7 +167,16 @@
       ["us", "uk"]
       {:systems-containers-tags {{:system "Discourse" :container "web" :name "regions"}
                                  {:val ["us", "uk"]}}}))
-  (testing "metadata"))
+  (testing "metadata"
+    (are [path expected] (= expected (-> (#'f/path+val->tables {} [path :foo])
+                                         first
+                                         val
+                                         first
+                                         first
+                                         meta))
+      [:systems :Discourse :containers :db]
+      ; res: {:systems-containers {{:name "db" :system "Discourse"} {}}}
+      {::f/columns {:system {::f/fk-table-name :systems}}})))
 
 (deftest db->tables
   (let [db {:technologies {:Clojure {:links           {:main "https://clojure.org"}
