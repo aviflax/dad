@@ -179,7 +179,7 @@
         table-name (join-names table-name-parts)
         fk-table? (> (count table-name-parts) 1)
         f-keys (if fk-table?
-                  (->> kpp
+                  (->> (butlast kpp)
                        (map (fn [[table-name key-val]] [(singular table-name) (unkeyword key-val)]))
                        (into {}))
                   {})
