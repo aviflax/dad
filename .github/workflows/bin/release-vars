@@ -17,7 +17,7 @@ set -eu
 # about version numbers. Which is fine. So be it. So it goes.
 VERSION="$(date "+%Y.%m.%d").$GITHUB_RUN_NUMBER"
 
-if [[ $GITHUB_BRANCH == 'main' ]]; then
+if grep -q 'main$' <<< "$GITHUB_BRANCH"; then
   RELEASE_TAG="release-$VERSION"
   PRERELEASE='false'
 else

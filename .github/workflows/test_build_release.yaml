@@ -11,7 +11,7 @@ jobs:
     # Without this, every push to a branch with an open PR would trigger two executions of this job,
     # one of which would be redundant.
     if: |
-      (github.event_name == 'push' && github.ref == 'main')
+      (github.event_name == 'push' && github.ref == 'ref/head/main')
       ||
       (github.event_name == 'pull_request' && (   github.event.action == 'opened'
                                                || github.event.action == 'synchronize'
@@ -46,7 +46,7 @@ jobs:
     # when no PR is open. So we’ll run it for pushes to main (which includes merging a PR) and
     # when opening, synchronizing (pushing to), or reopening a PR.
     if: |
-      (github.event_name == 'push' && github.ref == 'main')
+      (github.event_name == 'push' && github.ref == 'ref/head/main')
       ||
       (github.event_name == 'pull_request' && (   github.event.action == 'opened'
                                                || github.event.action == 'synchronize'
@@ -85,7 +85,7 @@ jobs:
     # Without this, every push to a branch with an open PR would trigger two executions of this job,
     # one of which would be redundant.
     if: |
-      (github.event_name == 'push' && github.ref == 'main')
+      (github.event_name == 'push' && github.ref == 'ref/head/main')
       ||
       (github.event_name == 'pull_request' && (   github.event.action == 'opened'
                                                || github.event.action == 'synchronize'
