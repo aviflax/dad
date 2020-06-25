@@ -2,10 +2,11 @@
   "flattt = “Flatten To Tables” — I’m thinking of extracting this as a standalone library/tool.
   
   Prior art: https://github.com/OpenDataServices/flatten-tool"
-  (:require [clojure.string :as str]
+  (:require [clojure.set :as set :refer [union]]
+            [clojure.string :as str]
             [clojure.spec.alpha :as s]
             [clojure.spec.gen.alpha :as gen]
-            [clojure.walk :as walk :refer [keywordize-keys postwalk]]
+            [clojure.walk :as walk :refer [postwalk]]
             [inflections.core :refer [singular]]
             [medley.core :refer [deep-merge]]))
 
@@ -18,13 +19,14 @@
 (s/def ::non-empty-scalar (s/or :number number?
                                 :keyword ::non-blank-keyword
                                 :string ::non-blank-string))
-(s/def ::col-name         ::non-blank-keyword)
+(s/def ::col-name         (s/or :keyword ::non-blank-keyword
+                                :string  ::non-blank-string))
 (s/def ::row-col-val      (s/or :scalar      ::non-empty-scalar
                                 :scalar-coll (s/coll-of ::non-empty-scalar :gen-max 10)))
 (s/def ::row-cols         (s/map-of ::col-name ::row-col-val :gen-max 10))
 (s/def ::key-cols         (s/map-of ::col-name ::non-empty-scalar))
 (s/def ::keyed-rows       (s/map-of ::key-cols ::row-cols :gen-max 10))
-(s/def ::unkeyed-rows     (s/coll-of ::row-cols :gen-max 10))
+(s/def ::unkeyed-rows     (s/coll-of ::row-cols :kind set? :gen-max 10))
 (s/def ::table-name       ::non-blank-keyword)
 (s/def ::tables           (s/map-of ::table-name
                                     (s/or :keyed ::keyed-rows
@@ -65,23 +67,25 @@
   :args (s/cat :m (s/with-gen ::simple-test-map
                     #(gen/frequency [[9 (s/gen ::simple-test-map)]
                                      [1 (gen/return {:foo {:bar "baz"
-                                                           :props (gen/generate (s/gen ::simple-test-map))}})]])))
+                                                           "props" (gen/generate (s/gen ::simple-test-map))}})]])))
   :ret  ::simple-test-map
   :fn   (fn [{{in :m} :args
               out     :ret}]
           (let [map-seq (fn map-seq [m] (tree-seq map? #(interleave (keys %) (vals %)) m))]
-            (if (some :props (map-seq in))
-              ; TODO: this is incomplete; it doesn’t assert that the entries of :props are retained
-              (not-any? :props (map-seq out))
+            (if (some #{"props"} (set (map-seq in)))
+              ; TODO: this is incomplete; it doesn’t assert that the entries of "props" are retained
+              (not-any? #{"props"} (map-seq out))
               (= out in)))))
 
 (defn- fold-props
-  "TODO: we could probably fold this operation into pathize."
+  "TODO: we could probably fold this operation into pathize.
+  This will leave alone recordsets named :props, by virtue of recordset keys being keywords, not
+  strings."
   [m]
   (postwalk
     (fn [v]
-      (if-let [props (and (map? v) (map? (:props v)) (:props v))]
-        (merge props (dissoc v :props))
+      (if-let [props (and (map? v) (map? (v "props")) (v "props"))]
+        (merge (dissoc v "props") props)
         v))
     m))
 
@@ -121,6 +125,7 @@
       :id
       :name))
 
+; TODO
 ; (s/fdef add-fk
 ;   :args (s/cat :m            ::row-cols
 ;                :name-and-val (s/tuple ::non-blank-keyword ::scalar))
@@ -128,11 +133,9 @@
 
 (defn- add-fk
   [m [fk-table-name fk-table-key-val]]
-  (let [col-name (or (singular fk-table-name) fk-table-name)]
+  (let [col-name (keyword (or (singular fk-table-name) fk-table-name))]
     (-> (assoc m col-name (unkeyword fk-table-key-val))
         (vary-meta deep-merge {::columns {col-name {::fk-table-name fk-table-name}}}))))
-
-; (fn [[table-name key-val]] [(singular table-name) (unkeyword key-val)])
 
 (s/def ::path (s/coll-of ::scalar :gen-max 10))
 (s/def ::path-val (s/or :row-col-var  ::row-col-val
@@ -154,18 +157,19 @@
         table-name (join-names table-name-parts)
         fk-table? (pos? (count table-name-parts))
         f-keys (if fk-table?
-                  (reduce add-fk {} (vec (if val-rows? kpp (butlast kpp))))
+                  (reduce add-fk {} (vec (if val-rows? kpp (butlast kpp)))) ; convert to vector because of a spec that uses s/tuple
                   {})
         p-keys (merge f-keys (let [[_ key-val] (last kpp)]
                                {(key-col-name key-val) (unkeyword key-val)}))
+        rows (when val-rows? (set (map #(merge f-keys %) v)))
         col-name  (if (odd? (count path))
-                    (last path)
+                    (keyword (last path))
                     :val)
         col (if (= (last path) v)
               {}
               {col-name v})]
     (if val-rows?
-      (update tables table-name concat (map #(merge f-keys %) v))
+      (update tables table-name union rows)
       (update-in tables [table-name p-keys] merge col))))
 
 ; TODO
@@ -176,7 +180,6 @@
 (defn db->tables
   [m]
   (->> m
-       (keywordize-keys)
        (fold-props)
        (pathize)
        (interpolate-paths)
