@@ -3,8 +3,7 @@
             [clojure.spec.test.alpha :as stest]
             [clojure.test :refer [deftest is are testing]]
             [dad.db.export.flattt :as f]
-            [expound.alpha :as expound])
-  (:refer-clojure :exclude [*]))
+            [expound.alpha :as expound]))
 
 ; See https://github.com/bhb/expound#printer-options
 (set! s/*explain-out* (expound/custom-printer {:print-specs? false}))
@@ -103,24 +102,26 @@
      [:systems :Discourse :containers :db :technology]     "Access"}))
 
 (deftest add-fk
-  (let [m {}
-        fk-table-name :technologies
-        fk-table-key-val :Clojure
-        expected {:technology "Clojure"}
-        expected-meta {::f/columns {:technology {::f/fk-table-name fk-table-name}}}
-        res (#'f/add-fk m [fk-table-name fk-table-key-val])]
-    (is (= expected res))
-    (is (= expected-meta (meta res))))
-  (let [m (with-meta {:technology "Clojure"}
-                     {::f/columns {:technology {::f/fk-table-name :technologies}}})
-        fk-table-name :recommendations
-        fk-table-key-val :adopt
-        expected {:technology "Clojure" :recommendation "adopt"}
-        expected-meta {::f/columns {:technology {::f/fk-table-name :technologies}
-                                    :recommendation {::f/fk-table-name :recommendations}}}
-        res (#'f/add-fk m [fk-table-name fk-table-key-val])]
-    (is (= expected res))
-    (is (= expected-meta (meta res)))))
+  (testing "Adding a key to an empty map with no meta"
+    (let [m {}
+          fk-table-name :technologies
+          fk-table-key-val :Clojure
+          expected {:technology "Clojure"}
+          expected-meta {::f/columns {:technology {::f/fk-table-name fk-table-name}}}
+          res (#'f/add-fk m [fk-table-name fk-table-key-val])]
+      (is (= expected res))
+      (is (= expected-meta (meta res)))))
+  (testing "Adding a key to a non-empty map with meta"
+    (let [m (with-meta {:technology "Clojure"}
+                       {::f/columns {:technology {::f/fk-table-name :technologies}}})
+          fk-table-name :recommendations
+          fk-table-key-val :adopt
+          expected {:technology "Clojure" :recommendation "adopt"}
+          expected-meta {::f/columns {:technology {::f/fk-table-name :technologies}
+                                      :recommendation {::f/fk-table-name :recommendations}}}
+          res (#'f/add-fk m [fk-table-name fk-table-key-val])]
+      (is (= expected res))
+      (is (= expected-meta (meta res))))))
 
 (deftest path+val->tables
   (testing "data"
@@ -168,12 +169,7 @@
       {:systems-containers-tags {{:system "Discourse" :container "web" :name "regions"}
                                  {:val ["us", "uk"]}}}))
   (testing "metadata"
-    (are [path expected] (= expected (-> (#'f/path+val->tables {} [path :foo])
-                                         first
-                                         val
-                                         first
-                                         first
-                                         meta))
+    (are [path expected] (= expected (-> (#'f/path+val->tables {} [path :foo]) first val first key meta))
       [:systems :Discourse :containers :db]
       ; res: {:systems-containers {{:name "db" :system "Discourse"} {}}}
       {::f/columns {:system {::f/fk-table-name :systems}}})))
