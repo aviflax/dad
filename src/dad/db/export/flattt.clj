@@ -90,17 +90,19 @@
   ([m]
    (pathize m []))
   ([m path]
-   ; (println "map:" m "\npath:" path "\n\n")
    (->> m
        (map (fn [[k v]]
-                 ; (println "key:" k "\n" "val:" v "\n\n\n")
                  (cond
-                   (and (map? v) (seq v))  (pathize v (conj path k))
-                   ; (and (not (map? v))
-                   ;      (coll? v)
-                   ;      (map? (first v)))  (->> (map-indexed (fn [i v] (pathize v (conj path (join-names [k i])))) v)
-                   ;                              (apply concat))
-                   :else                   [(conj path k) v])))
+                   (and (map? v) (seq v))
+                   (pathize v (conj path k))
+
+                   (and (coll? v) (sequential? v) (every? map? v))
+                   (->> v
+                        (map-indexed (fn [i inner-val] (vector (conj path k (inc i)) inner-val)))
+                        (into {}))
+
+                   :else
+                   [(conj path k) v])))
         (into {}))))
 
 (defn- interpolate-paths
@@ -178,4 +180,4 @@
        (fold-props)
        (pathize)
        (interpolate-paths)
-       (reduce path+val->tables {})))
+       (reduce path+val->tables {} ,,,)))
