@@ -136,11 +136,18 @@
 (deftest path+val->tables
   (testing "data"
     (are [path v expected] (= expected (#'f/path+val->tables {} [path v]))
+
+;; TEMP?
+  [:technologies "Clojure" :recommendations 1]
+  {"type" "assess", "date" "2011-09-15"}
+  {:technologies-recommendations {{:technology "Clojure" :seq 1} {"type" "assess", "date" "2011-09-15"}}}
+;; /TEMP?
+
       [:technologies "Clojure" :recommendations]
       [{"type" "assess", "date" "2011-09-15"}
        {"type" "adopt",  "date" "2012-01-12"}]
-      {:technologies-recommendations #{{:technology "Clojure", "type" "assess", "date" "2011-09-15"}
-                                       {:technology "Clojure", "type" "adopt",  "date" "2012-01-12"}}}
+      {:technologies-recommendations {{:technology "Clojure" :seq 1} {"type" "assess", "date" "2011-09-15"}
+                                      {:technology "Clojure" :seq 2} {"type" "adopt",  "date" "2012-01-12"}}}
 
       ; --------------------
 
@@ -187,26 +194,26 @@
 (deftest db->tables
   (let [db {:technologies {"Clojure" {"links"           {"main" "https://clojure.org"}
                                       "props"           {"hosted" "true"}
-                                      "recommendations" [{"type" "assess" "date" "2011-09-15"}
-                                                         {"type" "adopt" "date" "2012-01-12"}]}
+                                      "recommendations" [{"type" "assess", "date" "2011-09-15"}
+                                                         {"type" "adopt", "date" "2012-01-12"}]}
                            "Crux"    {"links"           {"main" "https://opencrux.com"}}
                            "Kafka"   {"links"           {"main" "https://kafka.apache.org"}
-                                      "recommendations" [{"type" "assess" "date" "2013-12-16"}
-                                                         {"type" "adopt"  "date" "2016-03-03"}]}}
+                                      "recommendations" [{"type" "assess", "date" "2013-12-16"}
+                                                         {"type" "adopt",  "date" "2016-03-03"}]}}
             :systems      {"Discourse" {"links"      {"main" "https://discourse.org"}
-                                        "containers" {"web"   {"summary" "web server" "technology" "Tomcat"}
-                                                      "db"    {"summary" "db server"  "technology" "Access"}
-                                                      "cache" {"summary" "hot keys"   "technology" "PHP"}}}}}
+                                        "containers" {"web"   {"summary" "web server", "technology" "Tomcat"}
+                                                      "db"    {"summary" "db server",  "technology" "Access"}
+                                                      "cache" {"summary" "hot keys",   "technology" "PHP"}}}}}
         expected {:technologies                 {{:name "Clojure"} {:hosted "true"}
                                                  {:name "Crux"}    {}
                                                  {:name "Kafka"}   {}}
                   :technologies-links           {{:name "main" :technology "Clojure"} {:val "https://clojure.org"}
                                                  {:name "main" :technology "Crux"}    {:val "https://opencrux.com"}
                                                  {:name "main" :technology "Kafka"}   {:val "https://kafka.apache.org"}}
-                  :technologies-recommendations #{{:technology "Clojure", "type" "assess", "date" "2011-09-15"}
-                                                  {:technology "Clojure", "type" "adopt",  "date" "2012-01-12"}
-                                                  {:technology "Kafka", "type" "assess", "date" "2013-12-16"}
-                                                  {:technology "Kafka", "type" "adopt",  "date" "2016-03-03"}}
+                  :technologies-recommendations {{:technology "Clojure" :seq 1} {"type" "assess", "date" "2011-09-15"}
+                                                 {:technology "Clojure" :seq 2} {"type" "adopt",  "date" "2012-01-12"}
+                                                 {:technology "Kafka"   :seq 1} {"type" "assess", "date" "2013-12-16"}
+                                                 {:technology "Kafka"   :seq 2} {"type" "adopt",  "date" "2016-03-03"}}
                   :systems                      {{:name "Discourse"} {}}
                   :systems-links                {{:name "main" :system "Discourse"} {:val "https://discourse.org"}}
                   :systems-containers           {{:system "Discourse" :name "web"}   {:summary "web server" :technology "Tomcat"}

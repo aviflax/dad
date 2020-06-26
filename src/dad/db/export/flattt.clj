@@ -25,13 +25,9 @@
                                 :scalar-coll (s/coll-of ::non-empty-scalar :gen-max 10)))
 (s/def ::row-cols         (s/map-of ::col-name ::row-col-val :gen-max 10))
 (s/def ::key-cols         (s/map-of ::col-name ::non-empty-scalar))
-(s/def ::keyed-rows       (s/map-of ::key-cols ::row-cols :gen-max 10))
-(s/def ::unkeyed-rows     (s/coll-of ::row-cols :kind set? :gen-max 10))
+(s/def ::rows             (s/map-of ::key-cols ::row-cols :gen-max 10))
 (s/def ::table-name       ::non-blank-keyword)
-(s/def ::tables           (s/map-of ::table-name
-                                    (s/or :keyed ::keyed-rows
-                                          :unkeyed ::unkeyed-rows)
-                                    :gen-max 10))
+(s/def ::tables           (s/map-of ::table-name ::rows :gen-max 10))
 
 (defn- unkeyword
   [v]
@@ -161,7 +157,6 @@
                   {})
         p-keys (merge f-keys (let [[_ key-val] (last kpp)]
                                {(key-col-name key-val) (unkeyword key-val)}))
-        rows (when val-rows? (set (map #(merge f-keys %) v)))
         col-name  (if (odd? (count path))
                     (keyword (last path))
                     :val)
@@ -169,7 +164,7 @@
               {}
               {col-name v})]
     (if val-rows?
-      (update tables table-name union rows)
+      (update-in tables [table-name p-keys] merge v)
       (update-in tables [table-name p-keys] merge col))))
 
 ; TODO
