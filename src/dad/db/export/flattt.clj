@@ -85,6 +85,17 @@
         v))
     m))
 
+(defn- path+rows->indexed-rows
+  "Accepts a path, and a sequential collection of maps that represent rows. Returns a map of
+  paths to those rows, with each path being the supplied path with an additional value: the index of
+  that row, starting from 1 (because 0-based indexing is absurd)."
+  [path rows]
+  (->> rows
+       (map-indexed (fn [i v]
+                      [(conj path (inc i))
+                       v]))
+       (into {})))
+
 (defn- pathize
   {:derived-from "https://andersmurphy.com/2019/11/30/clojure-flattening-key-paths.html"}
   ([m]
@@ -97,9 +108,7 @@
                    (pathize v (conj path k))
 
                    (and (coll? v) (sequential? v) (every? map? v))
-                   (->> v
-                        (map-indexed (fn [i inner-val] (vector (conj path k (inc i)) inner-val)))
-                        (into {}))
+                   (path+rows->indexed-rows (conj path k) v)
 
                    :else
                    [(conj path k) v])))
