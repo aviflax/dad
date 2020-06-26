@@ -189,4 +189,5 @@
        (fold-props)
        (pathize)
        (interpolate-paths)
+       ;; TODO: switch to reduce-kv? I think so…
        (reduce path+val->tables {} ,,,)))

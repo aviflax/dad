@@ -54,19 +54,18 @@
     ; --------------------
 
     ; in
-    ; {:systems {"Discourse" {"summary"    "Web forums that don’t suck."
-    ;                         "links"      {"main" "https://discourse.org"}
-    ;                         "containers" {"web"   {"summary" "web server", "technology" "JRun", "tags" {"regions" ["us", "uk"]}}
-    ;                                       "db"    {"summary" "db server", "technology" "Access"}}}}}
-    ; ; expected
-    ; {[:systems "Discourse" "summary"]                           "Web forums that don’t suck."
-    ;  [:systems "Discourse" "links" "main"]                      "https://discourse.org"
-    ;  [:systems "Discourse" "containers" "web" "summary"]        "web server"
-    ;  [:systems "Discourse" "containers" "web" "technology"]     "JRun"
-    ;  [:systems "Discourse" "containers" "web" "tags" "regions"] ["us", "uk"]
-    ;  [:systems "Discourse" "containers" "db" "summary"]         "db server"
-    ;  [:systems "Discourse" "containers" "db" "technology"]      "Access"}
-    ))
+    {:systems {"Discourse" {"summary"    "Web forums that don’t suck."
+                            "links"      {"main" "https://discourse.org"}
+                            "containers" {"web"   {"summary" "web server", "technology" "JRun", "tags" {"regions" ["us", "uk"]}}
+                                          "db"    {"summary" "db server", "technology" "Access"}}}}}
+    ; expected
+    {[:systems "Discourse" "summary"]                           "Web forums that don’t suck."
+     [:systems "Discourse" "links" "main"]                      "https://discourse.org"
+     [:systems "Discourse" "containers" "web" "summary"]        "web server"
+     [:systems "Discourse" "containers" "web" "technology"]     "JRun"
+     [:systems "Discourse" "containers" "web" "tags" "regions"] ["us", "uk"]
+     [:systems "Discourse" "containers" "db" "summary"]         "db server"
+     [:systems "Discourse" "containers" "db" "technology"]      "Access"}))
 
 (deftest interpolate-paths
   (are [in expected] (= expected (#'f/interpolate-paths in))
