@@ -29,6 +29,12 @@
 (s/def ::table-name       ::non-blank-keyword)
 (s/def ::tables           (s/map-of ::table-name ::rows :gen-max 10))
 
+;; Specs used only for/by the private functions
+(s/def ::path      (s/every ::scalar :min-count 1 :gen-max 10))
+(s/def ::path-val  (s/or :row-col-var ::row-col-val
+                         :rows        ::rows))
+(s/def ::path-rows (s/every-kv ::path ::row-cols :gen-max 10))
+
 (defn- unkeyword
   [v]
   (if (keyword? v)
@@ -84,6 +90,17 @@
         (merge (dissoc v "props") props)
         v))
     m))
+
+(s/fdef path+rows->indexed-rows
+  :args (s/cat :path     ::path
+               :row-cols (s/every ::row-cols :min-count 1 :gen-max 10))
+  :ret  (s/and ::path-rows #(every? (comp pos-int? last first) %))
+  :fn   (fn [{{:keys [path row-cols]} :args
+              ret                     :ret}]
+          (and (= (set row-cols) (set (vals ret)))
+               (every? #(= path (butlast %)) (keys ret))
+               (let [indices (sort (map (comp last key) ret))]
+                 (apply < indices)))))
 
 (defn- path+rows->indexed-rows
   "Accepts a path, and a sequential collection of maps that represent rows. Returns a map of
@@ -144,9 +161,7 @@
     (-> (assoc m col-name (unkeyword fk-table-key-val))
         (vary-meta deep-merge {::columns {col-name {::fk-table-name fk-table-name}}}))))
 
-(s/def ::path (s/coll-of ::scalar :gen-max 10))
-(s/def ::path-val (s/or :row-col-var  ::row-col-val
-                        :unkeyed-rows ::unkeyed-rows))
+
 
 ; TODO
 ; (s/fdef path+val->tables
@@ -166,7 +181,7 @@
         f-keys (if fk-table?
                   (reduce add-fk {} (vec (if val-rows? kpp (butlast kpp)))) ; convert to vector because of a spec that uses s/tuple
                   {})
-        p-keys (merge f-keys (let [[_ key-val] (last kpp)]
+        p-keys (merge f-keys (let [key-val (second (last kpp))]
                                {(key-col-name key-val) (unkeyword key-val)}))
         col-name  (if (odd? (count path))
                     (keyword (last path))

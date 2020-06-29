@@ -136,18 +136,9 @@
 (deftest path+val->tables
   (testing "data"
     (are [path v expected] (= expected (#'f/path+val->tables {} [path v]))
-
-      ;; TEMP?
-        [:technologies "Clojure" :recommendations 1]
-        {"type" "assess", "date" "2011-09-15"}
-        {:technologies-recommendations {{:technology "Clojure" :seq 1} {"type" "assess", "date" "2011-09-15"}}}
-      ;; /TEMP?
-
-      [:technologies "Clojure" :recommendations]
-      [{"type" "assess", "date" "2011-09-15"}
-       {"type" "adopt",  "date" "2012-01-12"}]
-      {:technologies-recommendations {{:technology "Clojure" :seq 1} {"type" "assess", "date" "2011-09-15"}
-                                      {:technology "Clojure" :seq 2} {"type" "adopt",  "date" "2012-01-12"}}}
+      [:technologies "Clojure" :recommendations 1]
+      {"type" "assess", "date" "2011-09-15"}
+      {:technologies-recommendations {{:technology "Clojure" :seq 1} {"type" "assess", "date" "2011-09-15"}}}
 
       ; --------------------
 
