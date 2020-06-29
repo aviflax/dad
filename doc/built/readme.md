@@ -7,10 +7,12 @@ your changes WILL be lost when the file is regenerated — so DON’T DO THAT.
 
 SERIOUSLY.
 
-Source template: <repo-root>/../doc/templates/readme.md
+Source template: <repo-root>/doc/templates/readme.md
 
 -->
 
-# DaD (Docs as Data)
+# DaD (Docs as Data) Documentation
 
+* [DaD Templates](templates.md)
 * [Developing and Testing DaD](dev/index.md)
+* [What is “Docs as Data”?](docs-as-data.md)

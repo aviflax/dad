@@ -7,7 +7,7 @@ your changes WILL be lost when the file is regenerated — so DON’T DO THAT.
 
 SERIOUSLY.
 
-Source template: <repo-root>/../doc/templates/dev/readme.md
+Source template: <repo-root>/doc/templates/dev/readme.md
 
 -->
 
@@ -33,3 +33,42 @@ We have a few useful scripts:
   <dd>Runs our test runner</dd>
 
 </dl>
+
+## Testing
+
+This project uses [Kaocha][kaocha] as its test runner.
+
+Each subdirectory under `<project-root>/test` is a test suite, e.g. `examples`, `integration`,
+`property`, etc.
+
+### Running the tests
+
+#### From a shell
+
+```shell
+# Run all suites
+bin/kaocha
+
+# Run a single suite
+bin/kaocha examples
+```
+
+#### From a REPL
+
+```clojure
+(use 'kaocha.repl)
+
+; Run all suites
+(run-all)
+
+; Run a single suite
+(run :examples)
+
+; Run a single namespace
+(run 'dad.rendering.tags-test)
+
+; Run a single test var
+(run 'dad.rendering.tags-tags/test-exec)
+```
+
+[kaocha]: https://github.com/lambdaisland/kaocha
