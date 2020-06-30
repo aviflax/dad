@@ -2,8 +2,7 @@
   "flattt = “Flatten To Tables” — I’m thinking of extracting this as a standalone library/tool.
   
   Prior art: https://github.com/OpenDataServices/flatten-tool"
-  (:require [clojure.set :as set :refer [union]]
-            [clojure.string :as str]
+  (:require [clojure.string :as str]
             [clojure.spec.alpha :as s]
             [clojure.spec.gen.alpha :as gen]
             [clojure.walk :as walk :refer [postwalk]]
@@ -174,24 +173,21 @@
   ; The args are shaped like this because it’s meant to be used in a reduce.
   [tables [path v]]
   (let [kpp (partition 2 path)
-        val-rows? (and (sequential? v) (map? (first v))) ; is the value a coll of rows?
-        table-name-parts (take-nth 2 (if val-rows? path (butlast path)))
+        table-name-parts (take-nth 2 (butlast path))
         table-name (join-names table-name-parts)
         fk-table? (pos? (count table-name-parts))
         f-keys (if fk-table?
-                  (reduce add-fk {} (vec (if val-rows? kpp (butlast kpp)))) ; convert to vector because of a spec that uses s/tuple
+                  (reduce add-fk {} (vec (butlast kpp))) ; convert to vector because of a spec that uses s/tuple
                   {})
-        p-keys (merge f-keys (let [key-val (second (last kpp))]
-                               {(key-col-name key-val) (unkeyword key-val)}))
+        p-keys (let [key-val (second (last kpp))]
+                 (assoc f-keys (key-col-name key-val) (unkeyword key-val)))
         col-name  (if (odd? (count path))
                     (keyword (last path))
                     :val)
-        col (if (= (last path) v)
-              {}
-              {col-name v})]
-    (if val-rows?
-      (update-in tables [table-name p-keys] merge v)
-      (update-in tables [table-name p-keys] merge col))))
+        col (cond (map? v)           v
+                  (= (last path) v)  {}
+                  :else              {col-name v})]
+    (update-in tables [table-name p-keys] merge col)))
 
 ; TODO
 ; (s/fdef db->tables

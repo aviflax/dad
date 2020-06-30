@@ -54,6 +54,16 @@
     ; --------------------
 
     ; in
+    {:records [{"event-type" "start", "date" "2011-09-15"}
+               {"event-type" "stop",  "date" "2012-01-12"}]}
+    
+    ; expected
+    {[:records 1] {"event-type" "start", "date" "2011-09-15"}
+     [:records 2] {"event-type" "stop",  "date" "2012-01-12"}}
+  
+    ; --------------------
+
+    ; in
     {:systems {"Discourse" {"summary"    "Web forums that don’t suck."
                             "links"      {"main" "https://discourse.org"}
                             "containers" {"web"   {"summary" "web server", "technology" "JRun", "tags" {"regions" ["us", "uk"]}}
@@ -138,8 +148,14 @@
     (are [path v expected] (= expected (#'f/path+val->tables {} [path v]))
       [:technologies "Clojure" :recommendations 1]
       {"type" "assess", "date" "2011-09-15"}
-      {:technologies-recommendations {{:technology "Clojure" :seq 1} {"type" "assess", "date" "2011-09-15"}}}
+      {:technologies-recommendations {{:technology "Clojure" :id 1} {"type" "assess", "date" "2011-09-15"}}}
 
+      ; --------------------
+      
+      [:records 1]
+      {"event-type" "start", "date" "2011-09-15"}
+      {:records {{:id 1} {"event-type" "start", "date" "2011-09-15"}}}
+      
       ; --------------------
 
       [:systems "Discourse" "summary"]
@@ -201,10 +217,10 @@
                   :technologies-links           {{:name "main" :technology "Clojure"} {:val "https://clojure.org"}
                                                  {:name "main" :technology "Crux"}    {:val "https://opencrux.com"}
                                                  {:name "main" :technology "Kafka"}   {:val "https://kafka.apache.org"}}
-                  :technologies-recommendations {{:technology "Clojure" :seq 1} {"type" "assess", "date" "2011-09-15"}
-                                                 {:technology "Clojure" :seq 2} {"type" "adopt",  "date" "2012-01-12"}
-                                                 {:technology "Kafka"   :seq 1} {"type" "assess", "date" "2013-12-16"}
-                                                 {:technology "Kafka"   :seq 2} {"type" "adopt",  "date" "2016-03-03"}}
+                  :technologies-recommendations {{:technology "Clojure" :id 1} {"type" "assess", "date" "2011-09-15"}
+                                                 {:technology "Clojure" :id 2} {"type" "adopt",  "date" "2012-01-12"}
+                                                 {:technology "Kafka"   :id 1} {"type" "assess", "date" "2013-12-16"}
+                                                 {:technology "Kafka"   :id 2} {"type" "adopt",  "date" "2016-03-03"}}
                   :systems                      {{:name "Discourse"} {}}
                   :systems-links                {{:name "main" :system "Discourse"} {:val "https://discourse.org"}}
                   :systems-containers           {{:system "Discourse" :name "web"}   {:summary "web server" :technology "Tomcat"}
@@ -213,6 +229,6 @@
         res (#'f/db->tables db)]
     (is (= expected res))
     (is (s/valid? ::f/tables res) (s/explain-str ::f/tables res))
-    (doseq [row (:technologies-recommendations res)]
+    (doseq [[key-cols non-key-cols] (:technologies-recommendations res)]
       (is (= {::f/columns {:technology {::f/fk-table-name :technologies}}}
-             (meta row))))))
+             (meta key-cols))))))
