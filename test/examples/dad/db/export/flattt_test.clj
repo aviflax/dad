@@ -229,6 +229,6 @@
         res (#'f/db->tables db)]
     (is (= expected res))
     (is (s/valid? ::f/tables res) (s/explain-str ::f/tables res))
-    (doseq [[key-cols non-key-cols] (:technologies-recommendations res)]
+    (doseq [[key-cols _non-key-cols] (:technologies-recommendations res)]
       (is (= {::f/columns {:technology {::f/fk-table-name :technologies}}}
              (meta key-cols))))))

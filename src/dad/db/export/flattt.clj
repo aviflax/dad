@@ -160,8 +160,6 @@
     (-> (assoc m col-name (unkeyword fk-table-key-val))
         (vary-meta deep-merge {::columns {col-name {::fk-table-name fk-table-name}}}))))
 
-
-
 ; TODO
 ; (s/fdef path+val->tables
 ;   :args (s/cat :tables   ::tables
