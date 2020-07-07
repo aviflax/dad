@@ -5,7 +5,7 @@
   specific to the needs of the Architecture team at Funding Circle, and this project is now intended
   to be useable/useful for people in other contexts outside of Funding Circle."
   (:require [clojure.string :as str :refer [blank? lower-case split]]
-            [medley.core :as mc]
+            [medley.core :as mc :refer [filter-vals]]
             [selmer.filters :as filters])
   (:import [java.time LocalDate ZonedDateTime]))
 
@@ -84,6 +84,22 @@
                                (lower-case (flexi-get v "full-name" (name k))))
                              coll))
    :split (fn [s regex] (str/split s (to-pattern regex)))
+   
+   ;; Given a map with values that are maps, or a non-associative coll of maps, and a key, return
+   ;; the same coll but containing only those entries whose value contains the specified key.
+   :with (fn [coll k]
+           {:pre [(coll? coll)
+                  (or (empty? coll)
+                      (map? (first coll))
+                      (and (map? coll)
+                           (map? (val (first coll)))))
+                  (string? k)
+                  (not (blank? k))]}
+           (let [f (if (map? coll) filter-vals filter)]
+             (f #(or (contains? % k)
+                     (contains? % (keyword k)))
+                coll)))
+
    :without (fn [coll k]
               (remove (fn [[_name props]]
                         (or (contains? props k)

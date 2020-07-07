@@ -79,3 +79,49 @@
        {"mission" "Dragon demo C101"
         "date"    "2010-12-08"}]
       "date")))
+
+(deftest with
+  (let [f (:with filters)]
+    ;; happy paths
+    (are [coll k expected] (is (= expected (f coll k)))
+      ;; map of maps
+      {"Clojure" {"recommended" {"by" "Avi", "on" "2010-12-08"}}
+       "PHP"     {"deprecated"  {"by" "Avi", "on" "2010-12-08"}}}
+      "recommended"
+      {"Clojure" {"recommended" {"by" "Avi", "on" "2010-12-08"}}}
+      
+      ;; non-associative coll of maps
+      [{"name" "Clojure", "recommended" {"by" "Avi", "on" "2010-12-08"}}
+       {"name" "PHP",     "deprecated"  {"by" "Avi", "on" "2010-12-08"}}]
+      "recommended"
+      [{"name" "Clojure", "recommended" {"by" "Avi", "on" "2010-12-08"}}]
+      
+      ;; empty coll
+      []
+      "foo"
+      [])
+    
+    ;; sad paths
+    (are [coll k] (is (thrown? AssertionError (f coll k)))
+      ;; vals are not maps
+      [1 2 3 4]
+      "recommended"
+      
+      ;; vals are not maps
+      {"Clojure" true
+       "PHP"     false}
+      "recommended"
+      
+      ;; nil coll
+      nil
+      "foo"
+      
+      ;; nil key
+      {"Clojure" {"recommended" {"by" "Avi", "on" "2010-12-08"}}
+       "PHP"     {"deprecated"  {"by" "Avi", "on" "2010-12-08"}}}
+      nil
+      
+      ;; blank key
+      {"Clojure" {"recommended" {"by" "Avi", "on" "2010-12-08"}}
+       "PHP"     {"deprecated"  {"by" "Avi", "on" "2010-12-08"}}}
+      "")))
