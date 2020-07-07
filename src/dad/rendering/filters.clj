@@ -4,7 +4,7 @@
   place to keep them. We should probably remove them from this project soon, because they’re highly
   specific to the needs of the Architecture team at Funding Circle, and this project is now intended
   to be useable/useful for people in other contexts outside of Funding Circle."
-  (:require [clojure.string :as str :refer [lower-case]]
+  (:require [clojure.string :as str :refer [blank? lower-case split]]
             [medley.core :as mc]
             [selmer.filters :as filters])
   (:import [java.time LocalDate ZonedDateTime]))
@@ -37,13 +37,26 @@
 
    :join (fn [coll separator] (str/join separator coll))
 
-   ; Given a sequence of maps, sort them by the specified date/time property, then return the map
-   ; with the most recent date value in that property. The values must be either ISO-8601 dates
-   ; (2020-04-20) or (COMING SOON) ISO-8601 date-times (2020-04-20T16:20:00-04:00).
-   ; TODO: what should this do if the value isn’t a sequence of maps? Or if one or more of the maps
-   ;       don’t have the specified property (key)?
-   :latest-by (fn [maps k]
-                (last (sort-by (fn [m] (LocalDate/parse (get m k))) maps)))
+   ;; Given a coll of maps, sort them by the specified date/time property (as specified by a
+   ;; dot-separated key path, to support nested maps) then return the map with the most recent date
+   ;; value in that property. The property specifier may include `.` chars to refer to nested maps.
+   ;; The values must be either ISO-8601 dates (2020-04-20) or (COMING SOON) ISO-8601 date-times
+   ;; (2020-04-20T16:20:00-04:00).
+   ;; If key-path is blank or not a string, throws.
+   ;; If the specified key-path is not found in any of the maps, throws.
+   ;; If any of the values at the specified key-path cannot be parsed into an ISO-8601 date, throws.
+   ;; If the coll of maps is empty, returns the empty coll.
+   ;; If the coll of maps contains a single value, skips parsing and returns the coll.
+   ; TODO: what should this do if the value isn’t a coll of maps?
+   :latest-by (fn [maps key-path]
+                {:pre [(coll? maps)
+                       (string? key-path)
+                       (not (blank? key-path))]}
+                (if (<= (count maps) 1)
+                  maps
+                  (let [kp (split key-path #"\.")]
+                    (last (sort-by #(LocalDate/parse (get-in % kp))
+                                   maps)))))
 
    ;; This needs to produce the same slugs that GitHub generates when rendering Markdown into HTML.
    ;; (GH generates “permalinks” for every Markdown header; the anchor is a slugified version of
