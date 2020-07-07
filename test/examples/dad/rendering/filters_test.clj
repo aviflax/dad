@@ -91,9 +91,11 @@
     (are [coll k expected] (is (= expected (f coll k)))
       ;; map of maps
       {"Clojure" {"recommended" {"by" "Avi", "on" "2010-12-08"}}
-       "PHP"     {"deprecated"  {"by" "Avi", "on" "2010-12-08"}}}
+       "PHP"     {"deprecated"  {"by" "Avi", "on" "2010-12-08"}}
+       "Kafka"   {"recommended" {"by" "Avi", "on" "2010-12-08"}}}
       "recommended"
-      {"Clojure" {"recommended" {"by" "Avi", "on" "2010-12-08"}}}
+      {"Clojure" {"recommended" {"by" "Avi", "on" "2010-12-08"}}
+       "Kafka"   {"recommended" {"by" "Avi", "on" "2010-12-08"}}}
       
       ;; non-associative coll of maps
       [{"name" "Clojure", "recommended" {"by" "Avi", "on" "2010-12-08"}}

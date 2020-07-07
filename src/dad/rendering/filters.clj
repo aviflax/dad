@@ -25,6 +25,49 @@
 
 (def ^:private to-pattern (memoize re-pattern))
 
+(defn- latest-by
+  "Given a coll of maps, sort them by the specified date/time property (as specified by a
+  dot-separated key path, to support nested maps) then return the map with the most recent date
+  value in that property. The property specifier may include `.` chars to refer to nested maps. The
+  values must be either ISO-8601 dates (2020-04-20) or (COMING SOON) ISO-8601 date-times
+  (2020-04-20T16:20:00-04:00).
+  
+  If the coll of maps is empty, returns the empty coll.
+  If the coll of maps contains a single value, skips parsing and returns the coll.
+  
+  Throws if:
+  
+  * key-path is blank or not a string
+  * the specified key-path is not found in any of the maps
+  * any of the values at the specified key-path cannot be parsed into an ISO-8601 date"
+  [maps key-path]
+  {:pre [(or (coll? maps) (nil? maps))
+         (string? key-path)
+         (not (blank? key-path))]}
+  (if (or (nil? maps) (<= (count maps) 1))
+    maps
+    (let [kp (split key-path #"\.")]
+      (last (sort-by #(LocalDate/parse (get-in % kp))
+                     maps)))))
+
+(defn- with
+  "Given a map with values that are maps, or a non-associative coll of maps, and a key, return
+  the same coll but containing only those entries whose value contains the specified key."
+  [coll k]
+  {:pre [(or (coll? coll) (nil? coll))
+         (or (empty? coll)
+             (map? (first coll))
+             (and (map? coll)
+                  (map? (val (first coll)))))
+         (string? k)
+         (not (blank? k))]}
+  (if (nil? coll)
+    coll
+    (let [f (if (map? coll) filter-vals filter)]
+      (f #(or (contains? % k)
+              (contains? % (keyword k)))
+         coll))))
+
 (def filters
   ;; TODO: some of these names are iffy. Rethink!
   {:filter-by (fn [m k v]
@@ -37,26 +80,7 @@
 
    :join (fn [coll separator] (str/join separator coll))
 
-   ;; Given a coll of maps, sort them by the specified date/time property (as specified by a
-   ;; dot-separated key path, to support nested maps) then return the map with the most recent date
-   ;; value in that property. The property specifier may include `.` chars to refer to nested maps.
-   ;; The values must be either ISO-8601 dates (2020-04-20) or (COMING SOON) ISO-8601 date-times
-   ;; (2020-04-20T16:20:00-04:00).
-   ;; If key-path is blank or not a string, throws.
-   ;; If the specified key-path is not found in any of the maps, throws.
-   ;; If any of the values at the specified key-path cannot be parsed into an ISO-8601 date, throws.
-   ;; If the coll of maps is empty, returns the empty coll.
-   ;; If the coll of maps contains a single value, skips parsing and returns the coll.
-   ; TODO: what should this do if the value isn’t a coll of maps?
-   :latest-by (fn [maps key-path]
-                {:pre [(or (coll? maps) (nil? maps))
-                       (string? key-path)
-                       (not (blank? key-path))]}
-                (if (or (nil? maps) (<= (count maps) 1))
-                  maps
-                  (let [kp (split key-path #"\.")]
-                    (last (sort-by #(LocalDate/parse (get-in % kp))
-                                   maps)))))
+   :latest-by latest-by
 
    ;; This needs to produce the same slugs that GitHub generates when rendering Markdown into HTML.
    ;; (GH generates “permalinks” for every Markdown header; the anchor is a slugified version of
@@ -85,28 +109,20 @@
                              coll))
    :split (fn [s regex] (str/split s (to-pattern regex)))
    
-   ;; Given a map with values that are maps, or a non-associative coll of maps, and a key, return
-   ;; the same coll but containing only those entries whose value contains the specified key.
-   :with (fn [coll k]
-           {:pre [(or (coll? coll) (nil? coll))
-                  (or (empty? coll)
-                      (map? (first coll))
-                      (and (map? coll)
-                           (map? (val (first coll)))))
-                  (string? k)
-                  (not (blank? k))]}
-           (if (nil? coll)
-             coll
-             (let [f (if (map? coll) filter-vals filter)]
-               (f #(or (contains? % k)
-                       (contains? % (keyword k)))
-                  coll))))
+   :with with
 
    :without (fn [coll k]
               (remove (fn [[_name props]]
                         (or (contains? props k)
                             (contains? props (keyword k))))
-                      coll))})
+                      coll))
+
+   ;; composite function 01 — calls `with` and then `latest-by`
+   :cf01 (fn [coll k key-path]
+           (-> (with coll k)
+               (latest-by key-path)
+               (vec)))
+})
 
 (defn register!
   []
