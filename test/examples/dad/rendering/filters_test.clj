@@ -39,8 +39,13 @@
 
       ; empty coll
       []
-      "launch-date"
-      [])
+      "foo"
+      []
+      
+      ; nil coll
+      nil
+      "foo"
+      nil)
 
     ;; sad paths resulting in AssertionError
     (are [maps key-path] (is (thrown? AssertionError (f maps key-path)))
@@ -99,7 +104,12 @@
       ;; empty coll
       []
       "foo"
-      [])
+      []
+      
+      ;; nil
+      nil
+      "foo"
+      nil)
     
     ;; sad paths
     (are [coll k] (is (thrown? AssertionError (f coll k)))
@@ -111,11 +121,7 @@
       {"Clojure" true
        "PHP"     false}
       "recommended"
-      
-      ;; nil coll
-      nil
-      "foo"
-      
+
       ;; nil key
       {"Clojure" {"recommended" {"by" "Avi", "on" "2010-12-08"}}
        "PHP"     {"deprecated"  {"by" "Avi", "on" "2010-12-08"}}}

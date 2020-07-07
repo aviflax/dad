@@ -49,10 +49,10 @@
    ;; If the coll of maps contains a single value, skips parsing and returns the coll.
    ; TODO: what should this do if the value isn’t a coll of maps?
    :latest-by (fn [maps key-path]
-                {:pre [(coll? maps)
+                {:pre [(or (coll? maps) (nil? maps))
                        (string? key-path)
                        (not (blank? key-path))]}
-                (if (<= (count maps) 1)
+                (if (or (nil? maps) (<= (count maps) 1))
                   maps
                   (let [kp (split key-path #"\.")]
                     (last (sort-by #(LocalDate/parse (get-in % kp))
@@ -88,17 +88,19 @@
    ;; Given a map with values that are maps, or a non-associative coll of maps, and a key, return
    ;; the same coll but containing only those entries whose value contains the specified key.
    :with (fn [coll k]
-           {:pre [(coll? coll)
+           {:pre [(or (coll? coll) (nil? coll))
                   (or (empty? coll)
                       (map? (first coll))
                       (and (map? coll)
                            (map? (val (first coll)))))
                   (string? k)
                   (not (blank? k))]}
-           (let [f (if (map? coll) filter-vals filter)]
-             (f #(or (contains? % k)
-                     (contains? % (keyword k)))
-                coll)))
+           (if (nil? coll)
+             coll
+             (let [f (if (map? coll) filter-vals filter)]
+               (f #(or (contains? % k)
+                       (contains? % (keyword k)))
+                  coll))))
 
    :without (fn [coll k]
               (remove (fn [[_name props]]
