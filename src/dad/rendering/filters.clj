@@ -81,7 +81,7 @@
                      (into (empty m))))
    :get flexi-get
 
-   :includes? str/includes?
+   :includes? (fnil str/includes? "")
 
    :join (fn [coll separator] (str/join separator coll))
 
