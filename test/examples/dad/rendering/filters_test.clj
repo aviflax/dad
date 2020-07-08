@@ -34,8 +34,8 @@
       [{"mission" "Dragon qualification"
         "date"    "2010-06-04"}]
       "launch-date-foo-does-not-matter"
-      [{"mission" "Dragon qualification"
-        "date"    "2010-06-04"}]
+      {"mission" "Dragon qualification"
+       "date"    "2010-06-04"}
 
       ; empty coll
       []

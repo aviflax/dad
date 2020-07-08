@@ -33,7 +33,7 @@
   (2020-04-20T16:20:00-04:00).
   
   If the coll of maps is empty, returns the empty coll.
-  If the coll of maps contains a single value, skips parsing and returns the coll.
+  If the coll of maps contains a single value, skips parsing and returns that single value.
   
   Throws if:
   
@@ -44,11 +44,16 @@
   {:pre [(or (coll? maps) (nil? maps))
          (string? key-path)
          (not (blank? key-path))]}
-  (if (or (nil? maps) (<= (count maps) 1))
-    maps
-    (let [kp (split key-path #"\.")]
-      (last (sort-by #(LocalDate/parse (get-in % kp))
-                     maps)))))
+  (cond
+    ; nil or empty
+    (not (seq maps))    maps
+    
+    (= (count maps) 1)  (first maps)
+    
+    :else               (let [kp (split key-path #"\.")]
+                          (last (sort-by #(LocalDate/parse (get-in % kp))
+                                         maps)))))
+  
 
 (defn- with
   "Given a map with values that are maps, or a non-associative coll of maps, and a key, return
@@ -120,8 +125,7 @@
    ;; composite function 01 — calls `with` and then `latest-by`
    :cf01 (fn [coll k key-path]
            (-> (with coll k)
-               (latest-by key-path)
-               (vec)))
+               (latest-by key-path)))
 })
 
 (defn register!
